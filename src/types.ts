@@ -115,7 +115,7 @@ export interface VoicePipelineMetrics {
 
 export interface ChatMessage {
   id: string;
-  sender: 'user' | 'jarvis' | 'supervisor' | 'teacher' | 'critic' | 'system';
+  sender: 'user' | 'kaizen' | 'supervisor' | 'teacher' | 'critic' | 'system';
   text: string;
   timestamp: number;
   actions?: ActionItem[];

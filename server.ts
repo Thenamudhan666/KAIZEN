@@ -56,7 +56,7 @@ async function generateWithFallback(ai: GoogleGenAI, request: { contents: any; c
       });
       return { response, model };
     } catch (err: any) {
-      console.warn(`[JARVIS] Model ${model} unavailable (${err?.status || err?.message?.slice(0, 50)}), failing over...`);
+      console.warn(`[KAIZEN] Model ${model} unavailable (${err?.status || err?.message?.slice(0, 50)}), failing over...`);
       lastError = err;
     }
   }
@@ -69,7 +69,7 @@ const initialVaultFiles: Record<string, { title: string; category: string; conte
     title: "Core Directives & Persona Guardrails",
     category: "system",
     updated: new Date().toISOString(),
-    content: `# JARVIS PARTNER CORE OPERATIONAL DIRECTIVES
+    content: `# KAIZEN PARTNER CORE OPERATIONAL DIRECTIVES
 
 ## Persona
 - Demeanor: Erudite British butler with dry wit, intellectual rigor, and an economy of words.
@@ -173,7 +173,7 @@ app.post("/api/gemini/study-analysis", async (req, res) => {
     const { response } = await generateWithFallback(ai, {
       contents: `Analyze this study material. Filename: ${filename}\n\nContent:\n${content.substring(0, 30000)}`,
       config: {
-        systemInstruction: "You are JARVIS, a highly advanced Socratic tutor. Analyze the provided text and output a JSON object containing a study guide.",
+        systemInstruction: "You are KAIZEN, a highly advanced Socratic tutor. Analyze the provided text and output a JSON object containing a study guide.",
         responseMimeType: "application/json",
         responseSchema: {
           type: Type.OBJECT,
@@ -204,7 +204,7 @@ app.get("/api/health", (req, res) => {
   res.json({
     status: "ok",
     hasApiKey: Boolean(process.env.GEMINI_API_KEY),
-    mode: "Jarvis Autonomous Core",
+    mode: "Kaizen Autonomous Core",
     timestamp: new Date().toISOString(),
   });
 });
@@ -256,7 +256,7 @@ app.post("/api/gemini/converse", async (req, res) => {
   const { message, contextHistory = [], voiceMode = false, activeContext = "" } = req.body;
   const ai = getGemini();
 
-  const systemInstruction = `You are JARVIS, an autonomous Socratic AI partner with deep local system integration.
+  const systemInstruction = `You are KAIZEN, an autonomous Socratic AI partner with deep local system integration.
 PERSONA:
 - Demeanor: Erudite British butler with dry wit, deep intellectual rigor, and an economy of words.
 - Tone: Subtly sarcastic yet profoundly supportive, disciplined, and razor-sharp.
@@ -475,7 +475,7 @@ app.post("/api/gemini/proactive-supervisor", async (req, res) => {
   const { ocrStream, stagnationDurationSec = 600, errorCount = 3, activeWindow = "LeetCode 312 - Burst Balloons" } = req.body;
   const ai = getGemini();
 
-  const systemInstruction = `You are the Screenpipe Continuous Context Supervisor for JARVIS.
+  const systemInstruction = `You are the Screenpipe Continuous Context Supervisor for KAIZEN.
 Analyze the user's desktop state, OCR timeline, active window, error count, and stagnation duration.
 Determine:
 1. isInterventionRequired (boolean): true if user is stuck, looping errors, or showing cognitive stall.
@@ -545,7 +545,7 @@ app.post("/api/gemini/voyager-learn", async (req, res) => {
   const { problemSolved, solutionCode, skillDomain = "Algorithms" } = req.body;
   const ai = getGemini();
 
-  const systemInstruction = `You are the Voyager Lifelong Learning Engine for JARVIS.
+  const systemInstruction = `You are the Voyager Lifelong Learning Engine for KAIZEN.
 When an engineering problem is successfully resolved:
 1. Abstract the solution into a reusable, compositional skill.
 2. Formulate skill ID (e.g. SKILL-DP-092), descriptive title, markdown summary, executable Python/TS code, and unit test assertions.
@@ -658,7 +658,7 @@ async function start() {
   }
 
   const httpServer = app.listen(PORT, "0.0.0.0", () => {
-    console.log(`[JARVIS Partner Core] Server listening on http://0.0.0.0:${PORT}`);
+    console.log(`[KAIZEN Partner Core] Server listening on http://0.0.0.0:${PORT}`);
   });
 
   // Setup WebSocket Server for Live API
@@ -681,7 +681,7 @@ async function start() {
           speechConfig: {
             voiceConfig: { prebuiltVoiceConfig: { voiceName: "Aoede" } },
           },
-          systemInstruction: "You are JARVIS, an erudite British butler with dry wit and an economy of words. Provide ultra-concise, sharp answers in 1 to 2 sentences.",
+          systemInstruction: "You are KAIZEN, an erudite British butler with dry wit and an economy of words. Provide ultra-concise, sharp answers in 1 to 2 sentences.",
         },
         callbacks: {
           onerror: (e) => {

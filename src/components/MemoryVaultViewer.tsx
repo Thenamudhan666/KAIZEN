@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Database, FileText, Search, Plus, Save, Trash2, Shield, BookOpen, Target, Sparkles } from 'lucide-react';
+import { Database, FileText, Search, Save, BookOpen } from 'lucide-react';
 import { VaultFile } from '../types';
 import { WorkspaceIntegrationPanel } from './WorkspaceIntegrationPanel';
 import { ObsidianPanel } from './ObsidianPanel';
@@ -101,29 +101,29 @@ export const MemoryVaultViewer: React.FC<MemoryVaultViewerProps> = ({ onFileSave
   };
 
   return (
-    <div id="memory-vault-panel" className="bg-[#0a0a0a] border border-[#333] p-4 flex flex-col h-full flex-1">
+    <div id="memory-vault-panel" className="rounded-2xl p-4 sm:p-5 border border-amber-500/20 bg-[#12151c]/90 backdrop-blur-xl shadow-2xl flex flex-col h-full flex-1">
       {/* Header */}
-      <div className="flex items-center justify-between pb-3 border-b border-[#333]">
-        <div className="flex items-center gap-2">
-          <div className="p-1 border border-[#00f0ff] text-[#00f0ff]">
+      <div className="flex items-center justify-between pb-3.5 border-b border-amber-500/15">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 via-amber-600 to-amber-700 flex items-center justify-center text-slate-950 font-bold shadow-[0_0_12px_rgba(245,158,11,0.5)]">
             <Database className="w-4 h-4" />
           </div>
           <div>
-            <h3 className="text-[10px] font-bold tracking-widest text-[#00f0ff] uppercase font-mono">
+            <h3 className="text-xs font-bold tracking-wider text-white uppercase font-mono">
               Memory Vault & SQLite FTS5
             </h3>
-            <p className="text-[9px] text-[#666] font-mono uppercase tracking-wider mt-0.5">
+            <p className="text-[10px] text-slate-400 font-mono uppercase tracking-wider mt-0.5">
               Interconnected Markdown Vault • nūs Student Core • Zero-Leakage
             </p>
           </div>
         </div>
 
         {/* Tab Switcher */}
-        <div className="flex items-center p-1 bg-[#111] border border-[#333] text-[10px] font-mono font-bold uppercase tracking-widest">
+        <div data-lenis-prevent className="flex items-center p-1 bg-[#151922] rounded-xl border border-amber-500/15 text-[10px] font-mono font-bold uppercase tracking-wider overflow-x-auto">
           <button
             onClick={() => setActiveTab('files')}
-            className={`px-3 py-1 transition-all ${
-              activeTab === 'files' ? 'bg-[#00f0ff] text-black' : 'text-[#666] hover:text-[#00f0ff]'
+            className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
+              activeTab === 'files' ? 'bg-gradient-to-r from-amber-500 to-amber-700 text-slate-950 font-bold border border-amber-400/40 shadow-[0_2px_10px_rgba(245,158,11,0.35)]' : 'text-slate-400 hover:text-amber-200'
             }`}
           >
             Vault Explorer
@@ -131,17 +131,17 @@ export const MemoryVaultViewer: React.FC<MemoryVaultViewerProps> = ({ onFileSave
           
           <button
             onClick={() => setActiveTab('student-nus')}
-            className={`px-3 py-1 transition-all ${
-              activeTab === 'student-nus' ? 'bg-[#00f0ff] text-black' : 'text-[#666] hover:text-[#00f0ff]'
+            className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
+              activeTab === 'student-nus' ? 'bg-gradient-to-r from-amber-500 to-amber-700 text-slate-950 font-bold border border-amber-400/40 shadow-[0_2px_10px_rgba(245,158,11,0.35)]' : 'text-slate-400 hover:text-amber-200'
             }`}
           >
-            nūs Student Core
+            nūs Core
           </button>
           
           <button
             onClick={() => setActiveTab('workspace')}
-            className={`px-3 py-1 transition-all ${
-              activeTab === 'workspace' ? 'bg-[#00f0ff] text-black' : 'text-[#666] hover:text-[#00f0ff]'
+            className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
+              activeTab === 'workspace' ? 'bg-gradient-to-r from-amber-500 to-amber-700 text-slate-950 font-bold border border-amber-400/40 shadow-[0_2px_10px_rgba(245,158,11,0.35)]' : 'text-slate-400 hover:text-amber-200'
             }`}
           >
             Workspace
@@ -149,23 +149,20 @@ export const MemoryVaultViewer: React.FC<MemoryVaultViewerProps> = ({ onFileSave
           
           <button
             onClick={() => setActiveTab('obsidian')}
-            className={`px-3 py-1 transition-all ${
-              activeTab === 'obsidian' ? 'bg-[#a855f7] text-black' : 'text-[#666] hover:text-[#a855f7]'
+            className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
+              activeTab === 'obsidian' ? 'bg-gradient-to-r from-amber-500 to-amber-700 text-slate-950 font-bold border border-amber-400/40 shadow-[0_2px_10px_rgba(245,158,11,0.35)]' : 'text-slate-400 hover:text-amber-200'
             }`}
           >
-            Obsidian (Local)
+            Obsidian
           </button>
           <button
             onClick={() => setActiveTab('study-lab')}
-            className={`px-3 py-1 transition-all ${
-              activeTab === 'study-lab' ? 'bg-[#f59e0b] text-black' : 'text-[#666] hover:text-[#f59e0b]'
+            className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
+              activeTab === 'study-lab' ? 'bg-gradient-to-r from-amber-500 to-amber-700 text-slate-950 font-bold border border-amber-400/40 shadow-[0_2px_10px_rgba(245,158,11,0.35)]' : 'text-slate-400 hover:text-amber-200'
             }`}
           >
             Study Lab
           </button>
-
-
-
         </div>
       </div>
 
@@ -173,34 +170,34 @@ export const MemoryVaultViewer: React.FC<MemoryVaultViewerProps> = ({ onFileSave
       {activeTab === 'files' && (
         <div className="mt-4 flex-1 grid grid-cols-1 md:grid-cols-3 gap-4 min-h-[360px]">
           {/* File List & Search */}
-          <div className="md:col-span-1 flex flex-col space-y-2 border-r border-[#333] pr-2">
+          <div className="md:col-span-1 flex flex-col space-y-2 border-r border-amber-500/15 pr-3">
             <div className="relative">
-              <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-[#666]" />
+              <Search className="w-3.5 h-3.5 absolute left-3 top-3 text-amber-400/60" />
               <input
                 id="vault-fts5-search-input"
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="FTS5 full-text search..."
-                className="w-full pl-8 pr-3 py-1.5 bg-[#111] border border-[#333] text-[11px] font-mono text-[#e0e0e0] placeholder-[#555] focus:outline-none focus:border-[#00f0ff]"
+                placeholder="Search markdown vault..."
+                className="w-full pl-8 pr-3 py-2 rounded-xl bg-[#151922] border border-amber-500/25 text-xs font-mono text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 shadow-inner"
               />
             </div>
 
-            <div className="flex-1 overflow-y-auto space-y-1 max-h-72">
+            <div data-lenis-prevent className="flex-1 overflow-y-auto space-y-1.5 max-h-72 pr-1">
               {files.map((file) => (
                 <button
                   key={file.path}
                   onClick={() => handleSelectFile(file)}
-                  className={`w-full text-left p-2.5 border text-[11px] font-mono transition-all flex items-start gap-2 ${
+                  className={`w-full text-left p-2.5 rounded-xl border text-xs font-mono transition-all flex items-start gap-2 cursor-pointer ${
                     selectedFile?.path === file.path
-                      ? 'bg-[#111] border-[#00f0ff] text-[#00f0ff]'
-                      : 'bg-transparent border-transparent text-[#666] hover:bg-[#111] hover:text-[#00f0ff]'
+                      ? 'bg-[#151922] border-amber-500/50 text-white shadow-sm'
+                      : 'border-transparent text-slate-400 hover:bg-white/[0.04] hover:text-white'
                   }`}
                 >
-                  <FileText className="w-4 h-4 text-cyan-400 shrink-0 mt-0.5" />
+                  <FileText className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
                   <div className="truncate flex-1">
-                    <div className="font-bold truncate text-[11px]">{file.title}</div>
-                    <div className="text-[10px] text-slate-500 truncate">{file.path}</div>
+                    <div className="font-semibold truncate text-xs text-white">{file.title}</div>
+                    <div className="text-[10px] text-slate-500 truncate font-mono">{file.path}</div>
                   </div>
                 </button>
               ))}
@@ -212,10 +209,10 @@ export const MemoryVaultViewer: React.FC<MemoryVaultViewerProps> = ({ onFileSave
             {selectedFile ? (
               <>
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-mono text-[#00f0ff] font-bold">{selectedFile.path}</span>
+                  <span className="text-xs font-mono text-amber-400 font-bold">{selectedFile.path}</span>
                   <button
                     onClick={handleSaveFile}
-                    className="px-3 py-1 border border-[#00f0ff] text-[#00f0ff] hover:bg-[#00f0ff] hover:text-black font-mono text-[10px] font-bold uppercase tracking-widest transition-all flex items-center gap-1.5"
+                    className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-700 hover:from-amber-400 hover:to-amber-600 text-slate-950 font-mono text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-1.5 shadow-[0_2px_8px_rgba(245,158,11,0.35)] border border-amber-300/40 active:scale-95 cursor-pointer"
                   >
                     <Save className="w-3.5 h-3.5" />
                     <span>Save to Vault</span>
@@ -224,7 +221,7 @@ export const MemoryVaultViewer: React.FC<MemoryVaultViewerProps> = ({ onFileSave
                 <textarea
                   value={editedContent}
                   onChange={(e) => setEditedContent(e.target.value)}
-                  className="flex-1 w-full p-4 bg-[#111] border border-[#333] text-[11px] font-mono text-[#e0e0e0] focus:outline-none focus:border-[#00f0ff] min-h-[260px] leading-relaxed resize-none"
+                  className="flex-1 w-full p-4 rounded-xl bg-[#151922] border border-amber-500/25 text-xs font-mono text-white focus:outline-none focus:border-amber-400 min-h-[260px] leading-relaxed resize-none shadow-inner"
                 />
               </>
             ) : (
@@ -239,26 +236,26 @@ export const MemoryVaultViewer: React.FC<MemoryVaultViewerProps> = ({ onFileSave
       {/* Tab: nūs Student Core */}
       {activeTab === 'student-nus' && (
         <div className="mt-4 flex-1 flex flex-col space-y-4">
-          <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-3 font-mono text-xs">
-            <div className="text-cyan-400 font-bold flex items-center gap-2">
-              <BookOpen className="w-4 h-4" />
+          <div className="p-4 rounded-xl bg-[#151922] border border-amber-500/20 space-y-3 font-mono text-xs">
+            <div className="text-amber-400 font-bold flex items-center gap-2">
+              <BookOpen className="w-4 h-4 text-amber-400" />
               <span>nūs Educational Core (Local Slash Commands)</span>
             </div>
             <p className="text-slate-400 text-[11px]">
               Direct terminal shortcuts for structured learning, memory capture, and daily syllabus decomposition.
             </p>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px]">
-              <div className="p-2.5 rounded-lg bg-slate-900 border border-slate-800">
-                <strong className="text-cyan-300 block mb-1">/capture [thought]</strong>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-[11px]">
+              <div className="p-3 rounded-xl bg-[#0f1116] border border-amber-500/15">
+                <strong className="text-amber-300 block mb-1">/capture [thought]</strong>
                 <span className="text-slate-400">Cleans, tags, and commits insights directly into the Vault.</span>
               </div>
-              <div className="p-2.5 rounded-lg bg-slate-900 border border-slate-800">
-                <strong className="text-emerald-300 block mb-1">/quest</strong>
+              <div className="p-3 rounded-xl bg-[#0f1116] border border-amber-500/15">
+                <strong className="text-amber-400 block mb-1">/quest</strong>
                 <span className="text-slate-400">Extracts syllabus deadlines into binary daily milestones.</span>
               </div>
-              <div className="p-2.5 rounded-lg bg-slate-900 border border-slate-800">
-                <strong className="text-amber-300 block mb-1">/level [skill]</strong>
+              <div className="p-3 rounded-xl bg-[#0f1116] border border-amber-500/15">
+                <strong className="text-amber-200 block mb-1">/level [skill]</strong>
                 <span className="text-slate-400">Generates a 20-45min customized repetition block.</span>
               </div>
             </div>
@@ -271,18 +268,18 @@ export const MemoryVaultViewer: React.FC<MemoryVaultViewerProps> = ({ onFileSave
                 value={slashInput}
                 onChange={(e) => setSlashInput(e.target.value)}
                 placeholder="Type /capture, /quest, or /level..."
-                className="flex-1 px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-xs font-mono text-slate-100 focus:outline-none focus:border-cyan-500"
+                className="flex-1 px-4 py-2 rounded-xl bg-[#0f1116] border border-amber-500/25 text-xs font-mono text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 shadow-inner"
               />
               <button
                 type="submit"
-                className="px-4 py-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-mono text-xs font-bold transition-all shadow-md"
+                className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-700 hover:from-amber-400 hover:to-amber-600 text-slate-950 font-mono text-xs font-bold transition-all shadow-[0_4px_16px_rgba(245,158,11,0.35)] border border-amber-300/40 active:scale-95 cursor-pointer"
               >
                 Execute
               </button>
             </form>
 
             {slashFeedback && (
-              <div className="p-3 rounded-lg bg-cyan-950/40 border border-cyan-500/40 text-cyan-200 text-xs animate-fadeIn">
+              <div className="p-3 rounded-xl bg-[#0f1116] border border-amber-500/30 text-amber-300 text-xs">
                 {slashFeedback}
               </div>
             )}
@@ -292,7 +289,6 @@ export const MemoryVaultViewer: React.FC<MemoryVaultViewerProps> = ({ onFileSave
     
       {/* Tab: Workspace */}
       {activeTab === 'workspace' && <WorkspaceIntegrationPanel />}
-    
       
       {/* Tab: Obsidian */}
       {activeTab === 'obsidian' && <ObsidianPanel />}

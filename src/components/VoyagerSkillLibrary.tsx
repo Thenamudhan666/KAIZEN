@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BookOpen, Sparkles, CheckCircle2, Code2, Plus, ArrowUpRight, Play, Terminal, Layers } from 'lucide-react';
+import { BookOpen, Sparkles, CheckCircle2, Plus } from 'lucide-react';
 import { VoyagerSkill } from '../types';
 
 interface VoyagerSkillLibraryProps {
@@ -92,42 +92,42 @@ end tell`,
   };
 
   return (
-    <div id="voyager-skill-library-panel" className="bg-[#0a0a0a] border border-[#333] p-4 flex flex-col h-full flex-1">
+    <div id="voyager-skill-library-panel" className="rounded-2xl p-4 sm:p-5 border border-amber-500/20 bg-[#12151c]/90 backdrop-blur-xl shadow-2xl flex flex-col h-full flex-1">
       {/* Header */}
-      <div className="flex items-center justify-between pb-3 border-b border-[#333]">
-        <div className="flex items-center gap-2">
-          <div className="p-1 border border-[#00f0ff] text-[#00f0ff]">
+      <div className="flex items-center justify-between pb-3.5 border-b border-amber-500/15">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 via-amber-600 to-amber-700 flex items-center justify-center text-slate-950 font-bold shadow-[0_0_12px_rgba(245,158,11,0.5)]">
             <BookOpen className="w-4 h-4" />
           </div>
           <div>
-            <h3 className="text-[10px] font-bold tracking-widest text-[#00f0ff] uppercase font-mono">
+            <h3 className="text-xs font-bold tracking-wider text-white uppercase font-mono">
               Lifelong Learning (Voyager Skill Library)
             </h3>
-            <p className="text-[9px] text-[#666] font-mono uppercase tracking-wider mt-0.5">
+            <p className="text-[10px] text-slate-400 font-mono uppercase tracking-wider mt-0.5">
               Autonomous Skill Accumulation • Sandbox Verification • Vault Persistence
             </p>
           </div>
         </div>
 
-        <span className="px-2.5 py-1 bg-[#111] text-[#00f0ff] border border-[#00f0ff] text-[9px] font-mono font-bold tracking-widest uppercase">
+        <span className="px-3 py-1 rounded-full bg-amber-500/15 text-amber-300 border border-amber-400/30 text-[10px] font-mono font-bold tracking-wider uppercase shadow-[0_0_8px_rgba(245,158,11,0.2)]">
           {skills.length} SKILLS COMPILED
         </span>
       </div>
 
       {/* Synthesis Form */}
-      <form onSubmit={handleSynthesizeSkill} className="mt-4 p-3 bg-[#111] border border-[#333] flex gap-2">
+      <form onSubmit={handleSynthesizeSkill} className="mt-4 p-3.5 rounded-xl bg-[#151922] border border-amber-500/20 flex gap-2 shadow-inner">
         <input
           id="voyager-problem-input"
           type="text"
           value={problemSolvedInput}
           onChange={(e) => setProblemSolvedInput(e.target.value)}
           placeholder="Enter problem resolved to compile into Voyager skill..."
-          className="flex-1 px-3 py-1.5 bg-transparent border-b border-[#333] text-[11px] font-mono text-[#e0e0e0] placeholder-[#555] focus:outline-none focus:border-[#00f0ff] transition-colors"
+          className="flex-1 px-4 py-2 rounded-lg bg-[#0f1116] border border-amber-500/25 text-xs font-mono text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 transition-colors shadow-inner"
         />
         <button
           type="submit"
           disabled={isSynthesizing}
-          className="px-4 py-1.5 border border-[#00f0ff] text-[#00f0ff] hover:bg-[#00f0ff] hover:text-black font-mono text-[10px] font-bold tracking-widest uppercase transition-all flex items-center gap-1.5 disabled:opacity-50"
+          className="px-4 py-2 rounded-lg bg-gradient-to-r from-amber-500 to-amber-700 hover:from-amber-400 hover:to-amber-600 text-slate-950 font-mono text-xs font-bold tracking-wider uppercase transition-all flex items-center gap-1.5 border border-amber-300/40 shadow-[0_2px_10px_rgba(245,158,11,0.35)] active:scale-95 disabled:opacity-50 cursor-pointer"
         >
           {isSynthesizing ? <Sparkles className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
           <span>Synthesize Skill</span>
@@ -137,24 +137,24 @@ end tell`,
       {/* Skill Cards Grid & Detail */}
       <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 flex-1">
         {/* Skill List */}
-        <div className="md:col-span-1 space-y-2 overflow-y-auto max-h-72">
+        <div className="md:col-span-1 space-y-2.5 overflow-y-auto max-h-72 pr-1">
           {skills.map((s) => (
             <button
               key={s.id}
               onClick={() => setSelectedSkill(s)}
-              className={`w-full text-left p-3 border transition-all text-xs font-mono ${
+              className={`w-full text-left p-3.5 rounded-xl border transition-all text-xs font-mono cursor-pointer ${
                 selectedSkill?.id === s.id
-                  ? 'bg-[#111] border-[#00f0ff] text-[#00f0ff]'
-                  : 'bg-transparent border-[#333] text-[#666] hover:bg-[#111] hover:text-[#00f0ff]'
+                  ? 'bg-[#151922] border-amber-500/50 text-white shadow-sm'
+                  : 'bg-[#151922]/50 border-amber-500/15 text-slate-400 hover:bg-white/[0.04] hover:text-white'
               }`}
             >
-              <div className="flex items-center justify-between text-[10px] text-[#666] mb-1">
-                <span className="font-bold text-[#00f0ff] uppercase">[{s.id}]</span>
-                <span>{s.invocations} calls</span>
+              <div className="flex items-center justify-between text-[10px] mb-1">
+                <span className="font-bold text-amber-400 uppercase">[{s.id}]</span>
+                <span className="text-slate-500">{s.invocations} calls</span>
               </div>
-              <div className="font-bold text-[11px] truncate">{s.title}</div>
-              <div className="text-[10px] text-[#666] mt-1 flex items-center gap-1 uppercase tracking-widest">
-                <CheckCircle2 className="w-3 h-3 text-[#00f0ff]" />
+              <div className="font-semibold text-white text-xs truncate">{s.title}</div>
+              <div className="text-[10px] text-amber-400 mt-1.5 flex items-center gap-1 uppercase tracking-wider font-semibold">
+                <CheckCircle2 className="w-3 h-3 text-amber-400" />
                 <span>Verified in Vault</span>
               </div>
             </button>
@@ -162,24 +162,24 @@ end tell`,
         </div>
 
         {/* Skill Code & Details */}
-        <div className="md:col-span-2 p-4 bg-[#111] border border-[#333] flex flex-col space-y-2">
+        <div className="md:col-span-2 p-4 rounded-xl bg-[#151922] border border-amber-500/20 flex flex-col space-y-3">
           {selectedSkill ? (
             <>
-              <div className="flex items-center justify-between text-[11px] font-mono">
+              <div className="flex items-center justify-between text-xs font-mono">
                 <div>
-                  <span className="text-[#00f0ff] font-bold uppercase tracking-widest">{selectedSkill.title}</span>
-                  <span className="text-[#666] text-[10px] block mt-0.5">{selectedSkill.filePath}</span>
+                  <span className="text-amber-400 font-bold uppercase tracking-wider">{selectedSkill.title}</span>
+                  <span className="text-slate-500 text-[10px] block mt-0.5">{selectedSkill.filePath}</span>
                 </div>
-                <span className="text-[9px] px-2 py-0.5 border border-[#00f0ff] text-[#00f0ff] tracking-widest uppercase">
+                <span className="text-[10px] px-2.5 py-0.5 rounded-full border border-amber-400/30 bg-amber-500/15 text-amber-300 font-bold uppercase">
                   {selectedSkill.unitTestSummary}
                 </span>
               </div>
 
-              <div className="flex-1 p-3 bg-[#0a0a0a] border border-[#333] font-mono text-[11px] text-[#00f0ff] overflow-y-auto max-h-52">
+              <div className="flex-1 p-3.5 rounded-lg bg-[#0b0c0e] border border-amber-500/15 font-mono text-xs text-amber-200/90 overflow-y-auto max-h-56 shadow-inner">
                 <pre className="whitespace-pre-wrap">{selectedSkill.executableCode}</pre>
               </div>
 
-              <p className="text-[11px] font-mono text-[#666] italic">
+              <p className="text-xs font-mono text-slate-400 italic">
                 "{selectedSkill.markdownContent}"
               </p>
             </>

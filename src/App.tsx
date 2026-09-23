@@ -9,6 +9,8 @@ import { MemoryVaultViewer } from './components/MemoryVaultViewer';
 import { VoyagerSkillLibrary } from './components/VoyagerSkillLibrary';
 import { QuickScenarioLauncher } from './components/QuickScenarioLauncher';
 import { TitleBar } from './components/TitleBar';
+import { LandingPage } from './components/landing/LandingPage';
+import { SmoothScrollProvider } from './components/SmoothScroll';
 import {
   AgentCognitiveState,
   ActionItem,
@@ -41,77 +43,97 @@ const AnimatedMessage: React.FC<{ msg: ChatMessage }> = ({ msg }) => {
     if (nodeRef.current) {
       anime({
         targets: nodeRef.current,
-        translateY: [20, 0],
-        translateZ: [30, 0],
-        rotateX: [-30, 0],
+        translateY: [15, 0],
         opacity: [0, 1],
-        duration: 800,
-        easing: 'easeOutElastic(1, .6)'
+        duration: 450,
+        easing: 'easeOutQuad'
       });
     }
   }, []);
 
-  return (
-    <div
-      ref={nodeRef}
-      className={`flex flex-col ${
-        msg.sender === 'user'
-          ? 'items-end'
-          : msg.sender === 'system'
-          ? 'items-center'
-          : 'items-start'
-      }`}
-      style={{ transformStyle: 'preserve-3d' }}
-    >
-      {msg.sender === 'system' ? (
-        <div className="px-3 py-1.5 rounded-lg bg-rose-950/40 border border-rose-500/40 text-rose-300 font-mono text-[11px] text-center max-w-md">
+  if (msg.sender === 'system') {
+    return (
+      <div ref={nodeRef} className="flex justify-center w-full my-1">
+        <div className="px-3.5 py-1.5 rounded-xl bg-rose-950/40 border border-rose-500/30 text-rose-300 font-mono text-[11px] text-center max-w-md shadow-sm">
           {msg.text}
         </div>
-      ) : msg.sender === 'supervisor' ? (
-        <div className="p-3 rounded-xl bg-amber-950/30 border border-amber-500/40 text-amber-200 font-mono text-xs max-w-lg space-y-1">
-          <div className="font-bold flex items-center gap-1 text-[11px] text-amber-300">
+      </div>
+    );
+  }
+
+  if (msg.sender === 'supervisor') {
+    return (
+      <div ref={nodeRef} className="flex justify-start w-full my-1">
+        <div className="p-3.5 rounded-xl bg-emerald-950/30 border border-emerald-500/30 text-emerald-300 font-mono text-xs max-w-lg space-y-1 shadow-sm">
+          <div className="font-bold flex items-center gap-1.5 text-[11px] text-emerald-400">
             <Eye className="w-3.5 h-3.5" />
             <span>Screenpipe Context Observer</span>
           </div>
-          <p className="whitespace-pre-wrap">{msg.text}</p>
+          <p className="whitespace-pre-wrap text-slate-200">{msg.text}</p>
         </div>
-      ) : (
-        <div
-          className={`max-w-[85%] p-3.5 rounded-2xl text-xs font-sans leading-relaxed ${
-            msg.sender === 'user'
-              ? 'bg-cyan-600 text-white rounded-br-none shadow-md'
-              : 'bg-slate-950/90 border border-slate-800 text-slate-100 rounded-bl-none shadow-sm font-sans'
-          }`}
-          style={{ transform: 'translateZ(10px)' }}
-        >
-          <div className="text-[10px] font-mono font-bold mb-1 opacity-75">
-            {msg.sender === 'user'
-              ? 'You'
-              : 'JARVIS (British Butler)'}
-          </div>
-          <p className="text-sm whitespace-pre-wrap">{msg.text}</p>
+      </div>
+    );
+  }
 
-          {/* Render Attached Action Tags */}
-          {msg.actions && msg.actions.length > 0 && (
-            <div className="mt-2.5 pt-2 border-t border-slate-800 space-y-1">
-              {msg.actions.map((act) => (
-                <div
-                  key={act.id}
-                  className="flex items-center gap-1.5 font-mono text-[10px] text-purple-300 bg-purple-950/40 p-1.5 rounded border border-purple-500/30"
-                >
-                  <span className="font-bold">[{act.tag}]</span>
-                  <span className="truncate">{act.payload}</span>
-                </div>
-              ))}
+  if (msg.sender === 'user') {
+    return (
+      <div ref={nodeRef} className="flex justify-end w-full my-1">
+        <div className="flex items-start gap-2.5 max-w-[85%] flex-row-reverse">
+          <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-amber-500 to-amber-700 flex items-center justify-center text-slate-950 font-black text-xs shrink-0 mt-0.5 shadow-[0_0_10px_rgba(245,158,11,0.5)]">
+            G
+          </div>
+          <div className="flex flex-col items-end">
+            <div className="flex items-center gap-1.5 mb-1">
+              <span className="font-mono text-[10px] text-amber-300/80 font-semibold">Gawtham</span>
             </div>
-          )}
+            <div className="p-3.5 rounded-2xl rounded-tr-sm bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600 text-slate-950 font-medium shadow-[0_4px_16px_rgba(245,158,11,0.3)] border border-amber-300/40 text-xs sm:text-sm leading-relaxed">
+              <p className="whitespace-pre-wrap leading-relaxed">{msg.text}</p>
+            </div>
+          </div>
         </div>
-      )}
+      </div>
+    );
+  }
+
+  // KAIZEN / Butler message
+  return (
+    <div ref={nodeRef} className="flex justify-start w-full my-1">
+      <div className="flex items-start gap-3 max-w-[88%]">
+        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-500 via-amber-600 to-amber-700 flex items-center justify-center text-slate-950 shrink-0 mt-0.5 shadow-[0_0_12px_rgba(245,158,11,0.5)] border border-white/20 font-bold">
+          <Bot className="w-4 h-4" />
+        </div>
+        <div className="flex flex-col items-start">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="font-mono text-[11px] font-bold text-white tracking-wide">KAIZEN</span>
+            <span className="text-amber-500/40 text-[10px]">•</span>
+            <span className="font-mono text-[10px] text-amber-300/80">Butler Persona</span>
+          </div>
+          <div className="p-4 rounded-2xl rounded-tl-sm bg-[#151922]/90 border border-amber-500/20 text-slate-100 shadow-xl text-xs sm:text-sm leading-relaxed">
+            <p className="whitespace-pre-wrap leading-relaxed">{msg.text}</p>
+
+            {/* Render Attached Action Tags */}
+            {msg.actions && msg.actions.length > 0 && (
+              <div className="mt-3 pt-2.5 border-t border-amber-500/15 space-y-1.5">
+                {msg.actions.map((act) => (
+                  <div
+                    key={act.id}
+                    className="flex items-center gap-1.5 font-mono text-[10px] text-amber-300 bg-amber-500/10 p-1.5 rounded-lg border border-amber-500/20"
+                  >
+                    <span className="font-bold text-amber-400">[{act.tag}]</span>
+                    <span className="truncate text-slate-300">{act.payload}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
 
 export default function App() {
+  const [viewMode, setViewMode] = useState<'landing' | 'cockpit'>('landing');
   const [activeTab, setActiveTab] = useState<
     'cockpit' | 'vault' | 'actions' | 'observer' | 'voice' | 'socratic' | 'voyager'
   >('cockpit');
@@ -127,7 +149,7 @@ export default function App() {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: 'init-1',
-      sender: 'jarvis',
+      sender: 'kaizen',
       text: 'Good day, sir. All core subsystems are operational. Local Memory Vault is secured with zero external telemetry, and the Screenpipe multimodal observer is actively monitoring your workflow.',
       timestamp: Date.now() - 60000,
     },
@@ -311,7 +333,7 @@ export default function App() {
 
       const botMsg: ChatMessage = {
         id: (Date.now() + 1).toString(),
-        sender: 'jarvis',
+        sender: 'kaizen',
         text: botText,
         timestamp: Date.now(),
         actions: parsedActions.length > 0 ? parsedActions : undefined,
@@ -330,7 +352,7 @@ export default function App() {
       
       const errorMsg: ChatMessage = {
         id: (Date.now() + 1).toString(),
-        sender: 'jarvis',
+        sender: 'kaizen',
         text: `[SYSTEM ERROR]: ${err.message || 'Connection failed'}. Check your server and API key.`,
         timestamp: Date.now(),
       };
@@ -375,14 +397,14 @@ export default function App() {
       timestamp: Date.now(),
     };
 
-    const jarvisVocalMsg: ChatMessage = {
+    const kaizenVocalMsg: ChatMessage = {
       id: (Date.now() + 1).toString(),
-      sender: 'jarvis',
+      sender: 'kaizen',
       text: intervention.proactiveVocalPrompt,
       timestamp: Date.now(),
     };
 
-    setMessages((prev) => [...prev, supervisorMsg, jarvisVocalMsg]);
+    setMessages((prev) => [...prev, supervisorMsg, kaizenVocalMsg]);
     setActiveSpeechText(intervention.proactiveVocalPrompt);
     setIsSpeaking(true);
     setAgentState('speaking');
@@ -488,149 +510,227 @@ export default function App() {
     } else if (scenarioKey === 'morning_brief') {
       setActiveTab('cockpit');
       await handleSendMessage(
-        'Good morning Jarvis. Please provide my daily agenda and active syllabus objectives from the local Vault.'
+        'Good morning Kaizen. Please provide my daily agenda and active syllabus objectives from the local Vault.'
       );
     }
   };
 
+  if (viewMode === 'landing') {
+    return (
+      <SmoothScrollProvider>
+        <div className="min-h-screen bg-[#0b0c0e] text-slate-100 font-sans selection:bg-amber-500/30 selection:text-amber-200">
+          <TitleBar isConnected={isConnected} />
+          <LandingPage onEnterDashboard={() => setViewMode('cockpit')} />
+        </div>
+      </SmoothScrollProvider>
+    );
+  }
+
   return (
-    <div 
-      ref={appContainerRef}
-      className="h-full flex flex-col font-sans bg-slate-950 overflow-hidden" 
-      style={{ perspective: '1200px' }}
-    >
-      {/* Electron Custom Title Bar */}
-      <TitleBar isConnected={isConnected} />
+    <SmoothScrollProvider>
+      <div 
+        ref={appContainerRef}
+        className="h-screen flex flex-col font-sans bg-[#0b0c0e] text-slate-100 overflow-hidden relative z-10" 
+        style={{ perspective: '1200px' }}
+      >
+        {/* Electron Custom Title Bar */}
+        <TitleBar isConnected={isConnected} />
 
       {/* Top Header & Subsystem Telemetry Bar */}
       <header
         id="app-header-bar"
-        className="flex justify-between items-end border-b border-slate-800 px-6 pb-4 pt-6 bg-slate-950 sticky top-0 z-50 origin-top"
+        className="flex flex-col border-b border-amber-500/20 px-4 sm:px-6 py-3.5 bg-[#0f1116]/95 backdrop-blur-2xl sticky top-0 z-40 shadow-[0_4px_30px_rgba(0,0,0,0.6)]"
       >
-        <div>
-          <div className="text-[10px] uppercase tracking-[0.3em] text-cyan-400 font-bold mb-1">
-            Project Aetheris // Jarvis Core
+        <div className="flex flex-wrap items-center justify-between gap-4 w-full">
+          {/* Left: Delta Icon + PROJECT AETHERIS + KAIZEN + v1.0.4-stable + "Think Speak Build Beyond" */}
+          <div className="flex items-center gap-3.5">
+            {/* High-tech Delta Glyph with amber glow */}
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#232936] via-[#161a22] to-[#0d0f14] border border-amber-400/40 flex items-center justify-center relative shadow-[0_0_20px_rgba(245,158,11,0.3)] shrink-0">
+              <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none">
+                <path d="M12 3 L21 19 L3 19 Z" stroke="url(#amberDeltaGrad)" strokeWidth="2.2" strokeLinejoin="round" />
+                <circle cx="12" cy="13.5" r="2.5" fill="#f59e0b" />
+                <defs>
+                  <linearGradient id="amberDeltaGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#fbbf24" />
+                    <stop offset="50%" stopColor="#f59e0b" />
+                    <stop offset="100%" stopColor="#ea580c" />
+                  </linearGradient>
+                </defs>
+              </svg>
+              <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-amber-400 rounded-full shadow-[0_0_8px_rgba(245,158,11,0.9)] animate-pulse"></span>
+            </div>
+
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-[10px] text-amber-400 font-bold uppercase tracking-widest">
+                  PROJECT AETHERIS // KAIZEN CORE
+                </span>
+              </div>
+              <div className="flex items-center gap-2.5 mt-0.5">
+                <h1 className="font-display text-xl sm:text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+                  KAIZEN
+                </h1>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                  v1.0.4-stable
+                </span>
+                <span className="font-script text-lg sm:text-xl text-amber-200/90 italic font-semibold ml-1 hidden sm:inline select-none">
+                  “Think Speak Build Beyond”
+                </span>
+              </div>
+            </div>
           </div>
-          <h1 className="text-3xl font-light tracking-tighter text-slate-100">
-            SYSTEM COMMAND INTERFACE <span className="text-slate-400">v1.0.4-stable</span>
-          </h1>
-        </div>
-        
-        <div className="flex gap-8 text-right hidden md:flex">
-          <div>
-            <div className="text-[10px] uppercase tracking-widest text-slate-400">Local Latency</div>
-            <div className="font-mono text-xl text-cyan-400">642ms</div>
+
+          {/* Center: 3 Telemetry metric cards */}
+          <div className="flex items-center gap-2.5 hidden md:flex">
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#161920]/80 border border-amber-500/15">
+              <span className="w-2 h-2 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(245,158,11,0.9)] animate-pulse"></span>
+              <div className="flex flex-col text-left">
+                <span className="font-mono text-[8px] text-slate-400 uppercase tracking-wider font-semibold">LOCAL LATENCY</span>
+                <span className="font-mono text-xs text-white font-bold">42ms</span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#161920]/80 border border-amber-500/15">
+              <span className="w-2 h-2 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(217,119,6,0.9)]"></span>
+              <div className="flex flex-col text-left">
+                <span className="font-mono text-[8px] text-slate-400 uppercase tracking-wider font-semibold">MEMORY VAULT</span>
+                <span className="font-mono text-xs text-white font-bold">1,248 MB</span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#161920]/80 border border-amber-500/15">
+              <span className="w-2 h-2 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(245,158,11,0.9)]"></span>
+              <div className="flex flex-col text-left">
+                <span className="font-mono text-[8px] text-slate-400 uppercase tracking-wider font-semibold">CPU LOAD</span>
+                <span className="font-mono text-xs text-white font-bold">24%</span>
+              </div>
+            </div>
           </div>
-          <div>
-            <div className="text-[10px] uppercase tracking-widest text-slate-400">Memory Vault</div>
-            <div className="font-mono text-xl text-slate-100">1,248 MB</div>
-          </div>
-          <div className="w-24 h-10 bg-slate-950 border border-slate-800 relative overflow-hidden">
-            <div className="absolute bottom-0 left-0 w-full h-1/2 bg-cyan-400/20"></div>
-            <div className="absolute top-1 left-1.5 text-[8px] font-mono text-slate-500">CPU_LOAD</div>
-            <div className="absolute bottom-1 right-1.5 text-xs font-mono text-cyan-400">24%</div>
+
+          {/* Right: Landing Page Toggle + User Avatar Chip */}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setViewMode('landing')}
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-amber-950/40 border border-amber-500/30 text-amber-300 hover:text-white hover:bg-amber-900/50 hover:border-amber-400/60 transition-all text-xs font-mono font-semibold cursor-pointer shadow-[0_0_12px_rgba(245,158,11,0.2)]"
+              title="Return to Futuristic Landing Page"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
+              <span>LANDING PAGE</span>
+            </button>
+
+            <div className="flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-[#161a22]/90 border border-amber-500/25 backdrop-blur-md shadow-md">
+              <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-amber-500 to-amber-700 flex items-center justify-center font-black text-xs text-slate-950 shadow-[0_0_10px_rgba(245,158,11,0.5)]">
+                G
+              </div>
+              <span className="text-xs font-semibold text-white">Gawtham</span>
+              <span className="text-xs">👏</span>
+              <span className="w-2 h-2 rounded-full bg-amber-400 shadow-[0_0_6px_rgba(245,158,11,0.9)] animate-pulse"></span>
+            </div>
           </div>
         </div>
 
         {/* Phase Navigation Bar */}
-        <div className="max-w-7xl mx-auto mt-3 flex items-center gap-1.5 overflow-x-auto pb-1 text-xs font-mono scrollbar-none">
+        <div data-lenis-prevent className="w-full mt-3 flex items-center gap-2 overflow-x-auto pb-0.5 text-xs font-mono scrollbar-none">
           <button
             id="tab-cockpit-btn"
             onClick={() => setActiveTab('cockpit')}
-            className={`tab-btn-anim px-3 py-1.5 rounded-lg border transition-all flex items-center gap-1.5 whitespace-nowrap origin-bottom ${
+            className={`tab-btn-anim px-3.5 py-1.5 rounded-xl border transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
               activeTab === 'cockpit'
-                ? 'bg-cyan-600 text-white font-bold border-cyan-500 shadow-md'
-                : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:text-slate-200'
+                ? 'bg-gradient-to-r from-amber-500/20 via-amber-600/30 to-amber-700/20 border-amber-400/50 text-white font-semibold shadow-[0_0_15px_rgba(245,158,11,0.25)]'
+                : 'bg-[#14171e]/40 border-white/5 text-slate-400 hover:text-amber-200 hover:bg-white/[0.03]'
             }`}
           >
-            <Sparkles className="w-3.5 h-3.5" />
+            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
             <span>Cockpit & Voice</span>
           </button>
 
           <button
             id="tab-vault-btn"
             onClick={() => setActiveTab('vault')}
-            className={`tab-btn-anim px-3 py-1.5 rounded-lg border transition-all flex items-center gap-1.5 whitespace-nowrap origin-bottom ${
+            className={`tab-btn-anim px-3.5 py-1.5 rounded-xl border transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
               activeTab === 'vault'
-                ? 'bg-cyan-600 text-white font-bold border-cyan-500 shadow-md'
-                : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:text-slate-200'
+                ? 'bg-gradient-to-r from-amber-500/20 via-amber-600/30 to-amber-700/20 border-amber-400/50 text-white font-semibold shadow-[0_0_15px_rgba(245,158,11,0.25)]'
+                : 'bg-[#14171e]/40 border-white/5 text-slate-400 hover:text-amber-200 hover:bg-white/[0.03]'
             }`}
           >
-            <Database className="w-3.5 h-3.5" />
-            <span>Phase 1: Memory Vault</span>
+            <Database className="w-3.5 h-3.5 text-amber-400" />
+            <span>Phase 1 Memory Vault</span>
           </button>
 
           <button
             id="tab-actions-btn"
             onClick={() => setActiveTab('actions')}
-            className={`tab-btn-anim px-3 py-1.5 rounded-lg border transition-all flex items-center gap-1.5 whitespace-nowrap origin-bottom ${
+            className={`tab-btn-anim px-3.5 py-1.5 rounded-xl border transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
               activeTab === 'actions'
-                ? 'bg-purple-600 text-white font-bold border-purple-500 shadow-md'
-                : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:text-slate-200'
+                ? 'bg-gradient-to-r from-amber-500/20 via-amber-600/30 to-amber-700/20 border-amber-400/50 text-white font-semibold shadow-[0_0_15px_rgba(245,158,11,0.25)]'
+                : 'bg-[#14171e]/40 border-white/5 text-slate-400 hover:text-amber-200 hover:bg-white/[0.03]'
             }`}
           >
-            <Terminal className="w-3.5 h-3.5" />
-            <span>Phase 2: Action Router</span>
+            <Terminal className="w-3.5 h-3.5 text-amber-400" />
+            <span>Phase 2 Action Router</span>
           </button>
 
           <button
             id="tab-observer-btn"
             onClick={() => setActiveTab('observer')}
-            className={`tab-btn-anim px-3 py-1.5 rounded-lg border transition-all flex items-center gap-1.5 whitespace-nowrap origin-bottom ${
+            className={`tab-btn-anim px-3.5 py-1.5 rounded-xl border transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
               activeTab === 'observer'
-                ? 'bg-amber-600 text-white font-bold border-amber-500 shadow-md'
-                : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:text-slate-200'
+                ? 'bg-gradient-to-r from-amber-500/20 via-amber-600/30 to-amber-700/20 border-amber-400/50 text-white font-semibold shadow-[0_0_15px_rgba(245,158,11,0.25)]'
+                : 'bg-[#14171e]/40 border-white/5 text-slate-400 hover:text-amber-200 hover:bg-white/[0.03]'
             }`}
           >
-            <Eye className="w-3.5 h-3.5" />
-            <span>Phase 3: Screenpipe Observer</span>
+            <Eye className="w-3.5 h-3.5 text-amber-400" />
+            <span>Phase 3 Screenpipe</span>
           </button>
 
           <button
             id="tab-voice-btn"
             onClick={() => setActiveTab('voice')}
-            className={`tab-btn-anim px-3 py-1.5 rounded-lg border transition-all flex items-center gap-1.5 whitespace-nowrap origin-bottom ${
+            className={`tab-btn-anim px-3.5 py-1.5 rounded-xl border transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
               activeTab === 'voice'
-                ? 'bg-sky-600 text-white font-bold border-sky-500 shadow-md'
-                : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:text-slate-200'
+                ? 'bg-gradient-to-r from-amber-500/20 via-amber-600/30 to-amber-700/20 border-amber-400/50 text-white font-semibold shadow-[0_0_15px_rgba(245,158,11,0.25)]'
+                : 'bg-[#14171e]/40 border-white/5 text-slate-400 hover:text-amber-200 hover:bg-white/[0.03]'
             }`}
           >
-            <Radio className="w-3.5 h-3.5" />
-            <span>Phase 4: Latency & Barge-In</span>
+            <Radio className="w-3.5 h-3.5 text-amber-400" />
+            <span>Phase 4 Latency & Barge-In</span>
           </button>
 
           <button
             id="tab-socratic-btn"
             onClick={() => setActiveTab('socratic')}
-            className={`tab-btn-anim px-3 py-1.5 rounded-lg border transition-all flex items-center gap-1.5 whitespace-nowrap origin-bottom ${
+            className={`tab-btn-anim px-3.5 py-1.5 rounded-xl border transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
               activeTab === 'socratic'
-                ? 'bg-violet-600 text-white font-bold border-violet-500 shadow-md'
-                : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:text-slate-200'
+                ? 'bg-gradient-to-r from-amber-500/20 via-amber-600/30 to-amber-700/20 border-amber-400/50 text-white font-semibold shadow-[0_0_15px_rgba(245,158,11,0.25)]'
+                : 'bg-[#14171e]/40 border-white/5 text-slate-400 hover:text-amber-200 hover:bg-white/[0.03]'
             }`}
           >
-            <Brain className="w-3.5 h-3.5" />
-            <span>Phase 5: Socratic Cognition</span>
+            <Brain className="w-3.5 h-3.5 text-amber-400" />
+            <span>Phase 5 Socratic Cognit</span>
           </button>
 
           <button
             id="tab-voyager-btn"
             onClick={() => setActiveTab('voyager')}
-            className={`tab-btn-anim px-3 py-1.5 rounded-lg border transition-all flex items-center gap-1.5 whitespace-nowrap origin-bottom ${
+            className={`tab-btn-anim px-3.5 py-1.5 rounded-xl border transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
               activeTab === 'voyager'
-                ? 'bg-emerald-600 text-white font-bold border-emerald-500 shadow-md'
-                : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:text-slate-200'
+                ? 'bg-gradient-to-r from-amber-500/20 via-amber-600/30 to-amber-700/20 border-amber-400/50 text-white font-semibold shadow-[0_0_15px_rgba(245,158,11,0.25)]'
+                : 'bg-[#14171e]/40 border-white/5 text-slate-400 hover:text-amber-200 hover:bg-white/[0.03]'
             }`}
           >
-            <BookOpen className="w-3.5 h-3.5" />
-            <span>Phase 5: Voyager Skills</span>
+            <BookOpen className="w-3.5 h-3.5 text-amber-400" />
+            <span>Phase 5 Voyager Skills</span>
           </button>
         </div>
       </header>
 
       {/* Main App Body */}
-      <main className="flex-1 w-full mx-auto p-4 sm:p-6 flex flex-col min-h-0 overflow-y-auto bg-slate-950 gap-6 main-panel-anim" style={{ transformStyle: 'preserve-3d' }}>
+      <main data-lenis-prevent className="flex-1 w-full mx-auto p-4 sm:p-6 flex flex-col min-h-0 overflow-y-auto bg-transparent gap-6 main-panel-anim relative z-10" style={{ transformStyle: 'preserve-3d' }}>
         {/* Quick Scenario Preset Launcher */}
-        <QuickScenarioLauncher onLaunchScenario={handleLaunchScenario} />
+        <QuickScenarioLauncher 
+          onLaunchScenario={handleLaunchScenario} 
+          onRunAllPhases={() => handleLaunchScenario('leetcode')}
+        />
 
         {/* Tab 1: Cockpit & Voice Interaction */}
         {activeTab === 'cockpit' && (
@@ -653,84 +753,160 @@ export default function App() {
             </div>
 
             {/* Right Column: Conversational Stream & Socratic Dialogue */}
-            <div 
-              ref={chatPanelRef}
-              onMouseMove={handleChatMouseMove}
-              onMouseLeave={handleChatMouseLeave}
-              className="lg:col-span-7 flex flex-col bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-xl backdrop-blur-xl min-h-[560px]"
-              style={{ transformStyle: 'preserve-3d' }}
-            >
-              <div className="flex items-center justify-between pb-3 border-b border-slate-800" style={{ transform: 'translateZ(20px)' }}>
-                <div className="flex items-center gap-2">
-                  <div className="p-1.5 rounded-lg bg-cyan-950 text-cyan-400 border border-cyan-500/30">
-                    <Bot className="w-4 h-4" />
+            <div className="lg:col-span-7 flex flex-col gap-5">
+              <div 
+                ref={chatPanelRef}
+                onMouseMove={handleChatMouseMove}
+                onMouseLeave={handleChatMouseLeave}
+                className="flex flex-col rounded-2xl p-5 shadow-2xl relative overflow-hidden border border-amber-500/20 bg-[#12151c]/90 backdrop-blur-xl min-h-[520px]"
+                style={{ transformStyle: 'preserve-3d' }}
+              >
+                <div className="flex items-center justify-between pb-3.5 border-b border-amber-500/15" style={{ transform: 'translateZ(20px)' }}>
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 via-amber-600 to-amber-700 flex items-center justify-center text-slate-950 shadow-[0_0_12px_rgba(245,158,11,0.4)] font-bold">
+                      <Bot className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-bold font-mono tracking-wide text-white">
+                        Socratic Conversational Stream
+                      </h3>
+                      <p className="text-[11px] text-slate-400 font-mono">
+                        British Butler Persona • 1-2 Sentence Voice Brevity
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="text-sm font-bold font-mono tracking-wide text-slate-100">
-                      Socratic Conversational Stream
-                    </h3>
-                    <p className="text-[11px] text-slate-400 font-mono">
-                      British Butler Persona • 1-2 Sentence Voice Brevity
-                    </p>
-                  </div>
+
+                  {/* Voice Brevity Toggle */}
+                  <button
+                    id="toggle-voice-brevity-btn"
+                    onClick={() => setVoiceModeBrevity(!voiceModeBrevity)}
+                    className={`px-3 py-1 rounded-full border text-[11px] font-mono transition-all font-semibold cursor-pointer ${
+                      voiceModeBrevity
+                        ? 'bg-amber-500/20 border-amber-400/50 text-amber-200 shadow-[0_0_12px_rgba(245,158,11,0.25)]'
+                        : 'bg-black/30 border-white/10 text-slate-400'
+                    }`}
+                  >
+                    {voiceModeBrevity ? 'VOICE CONSTRAINED' : 'UNCONSTRAINED'}
+                  </button>
                 </div>
 
-                {/* Voice Brevity Toggle */}
-                <button
-                  id="toggle-voice-brevity-btn"
-                  onClick={() => setVoiceModeBrevity(!voiceModeBrevity)}
-                  className={`px-2.5 py-1 rounded-lg border text-[11px] font-mono transition-all ${
-                    voiceModeBrevity
-                      ? 'bg-cyan-950 border-cyan-500/40 text-cyan-300'
-                      : 'bg-slate-950 border-slate-800 text-slate-500'
-                  }`}
+                {/* Chat Timeline */}
+                <div
+                  ref={chatScrollRef}
+                  data-lenis-prevent
+                  className="flex-1 overflow-y-auto space-y-3.5 my-4 pr-1 max-h-[360px]"
                 >
-                  {voiceModeBrevity ? 'VOICE CONSTRAINED' : 'UNCONSTRAINED'}
-                </button>
+                  {messages.map((msg) => (
+                    <AnimatedMessage key={msg.id} msg={msg} />
+                  ))}
+
+                  {isLoadingResponse && (
+                    <div className="flex items-center gap-2.5 p-3 rounded-xl bg-amber-950/30 border border-amber-500/25 text-xs font-mono text-amber-300">
+                      <Sparkles className="w-4 h-4 animate-spin text-amber-400" />
+                      <span>KAIZEN deliberating and formulating Socratic inquiry...</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Prompt Quick-Action Chips Row (matching mockup) */}
+                <div className="flex flex-wrap gap-2 py-2 border-t border-amber-500/15">
+                  {[
+                    { label: "What's my current focus?", prompt: "What's my current focus and active task context?" },
+                    { label: "Summarize active tools", prompt: "Summarize my active tools, subsystems, and environment capabilities." },
+                    { label: "Run Phase 1 demo", prompt: "Execute Phase 1 Memory Vault demo and query the syllabus." },
+                    { label: "Show memory vault status", prompt: "Show current memory vault enclave status, vector count, and recall score." },
+                  ].map((chip, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => handleSendMessage(chip.prompt)}
+                      className="px-3 py-1 rounded-full text-[11px] font-mono bg-amber-950/30 hover:bg-amber-900/40 text-amber-200 hover:text-white border border-amber-500/20 hover:border-amber-400/50 transition-all cursor-pointer shadow-sm active:scale-95"
+                    >
+                      {chip.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Chat Input Box - Pill shaped matching mockup */}
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    handleSendMessage(chatInput);
+                  }}
+                  className="mt-2 flex items-center gap-2 p-1.5 rounded-full bg-[#161a22] border border-amber-500/30 shadow-inner"
+                >
+                  <button
+                    type="button"
+                    onClick={() => handleSendMessage("Hello Kaizen, provide a quick system briefing.")}
+                    className="w-9 h-9 rounded-full bg-amber-500/15 hover:bg-amber-500/30 border border-amber-400/30 flex items-center justify-center text-amber-400 transition-colors ml-1 cursor-pointer"
+                    title="Voice prompt"
+                  >
+                    <Radio className="w-4 h-4" />
+                  </button>
+                  <input
+                    id="chat-user-input"
+                    type="text"
+                    value={chatInput}
+                    onChange={(e) => setChatInput(e.target.value)}
+                    placeholder="Ask KAIZEN anything or speak naturally..."
+                    className="flex-1 bg-transparent px-3 py-1.5 text-xs sm:text-sm font-sans text-white placeholder-slate-400 focus:outline-none"
+                  />
+                  <button
+                    type="submit"
+                    disabled={!chatInput.trim() || isLoadingResponse}
+                    className="w-9 h-9 rounded-full bg-gradient-to-r from-amber-500 via-amber-600 to-amber-700 hover:from-amber-400 hover:to-amber-600 text-slate-950 font-bold flex items-center justify-center transition-all shadow-[0_0_12px_rgba(245,158,11,0.4)] border border-white/20 disabled:opacity-40 disabled:cursor-not-allowed active:scale-90 mr-0.5 cursor-pointer"
+                    title="Send"
+                  >
+                    <Send className="w-4 h-4" />
+                  </button>
+                </form>
               </div>
 
-              {/* Chat Timeline */}
-              <div
-                ref={chatScrollRef}
-                className="flex-1 overflow-y-auto space-y-3.5 my-4 pr-1 max-h-[380px]"
-              >
-                {messages.map((msg) => (
-                  <AnimatedMessage key={msg.id} msg={msg} />
-                ))}
+              {/* Ambient Quote Card & Neon Ribbon Footer */}
+              <div className="rounded-2xl p-4 sm:p-5 border border-amber-500/20 bg-gradient-to-r from-[#12151d]/95 via-[#181d27]/90 to-[#12151d]/95 backdrop-blur-xl shadow-xl relative overflow-hidden flex items-center justify-between">
+                {/* Flowing Wave Ribbon SVG Graphic on the left */}
+                <div className="w-28 sm:w-36 h-12 relative shrink-0 flex items-center overflow-hidden pointer-events-none">
+                  <svg viewBox="0 0 140 48" className="w-full h-full" fill="none">
+                    <defs>
+                      <linearGradient id="ribbonGrad1" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor="#fbbf24" stopOpacity="0.9" />
+                        <stop offset="50%" stopColor="#f59e0b" stopOpacity="0.8" />
+                        <stop offset="100%" stopColor="#ea580c" stopOpacity="0.9" />
+                      </linearGradient>
+                      <linearGradient id="ribbonGrad2" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.5" />
+                        <stop offset="100%" stopColor="#b45309" stopOpacity="0.3" />
+                      </linearGradient>
+                    </defs>
+                    <path
+                      d="M 0 24 C 25 10, 45 38, 70 24 C 95 10, 115 38, 140 24"
+                      stroke="url(#ribbonGrad1)"
+                      strokeWidth="2.5"
+                      fill="none"
+                      className="animate-pulse"
+                    />
+                    <path
+                      d="M 0 26 C 25 38, 45 10, 70 26 C 95 38, 115 10, 140 26"
+                      stroke="url(#ribbonGrad2)"
+                      strokeWidth="1.5"
+                      fill="none"
+                    />
+                    <circle cx="25" cy="18" r="2" fill="#fbbf24" className="animate-ping" />
+                    <circle cx="70" cy="24" r="2.5" fill="#f59e0b" />
+                    <circle cx="115" cy="30" r="2" fill="#d97706" />
+                  </svg>
+                </div>
 
-                {isLoadingResponse && (
-                  <div className="flex items-center gap-2 p-3 rounded-xl bg-slate-950 border border-slate-800 text-xs font-mono text-cyan-400">
-                    <Sparkles className="w-4 h-4 animate-spin" />
-                    <span>JARVIS deliberating and formulating Socratic inquiry...</span>
-                  </div>
-                )}
+                {/* Quote Text */}
+                <div className="flex-1 pl-4 flex flex-col justify-center">
+                  <p className="text-xs sm:text-sm font-display font-medium text-slate-100 tracking-wide">
+                    “Intelligence amplifies human potential.” <span className="font-mono text-xs text-amber-400 font-semibold">— KAIZEN</span>
+                  </p>
+                  <p className="font-script text-sm sm:text-base text-amber-200/80 italic mt-0.5">
+                    A Partner for a Brighter Tomorrow
+                  </p>
+                </div>
               </div>
-
-              {/* Chat Input Box */}
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  handleSendMessage(chatInput);
-                }}
-                className="flex items-center gap-2 pt-2 border-t border-slate-800"
-              >
-                <input
-                  id="chat-user-input"
-                  type="text"
-                  value={chatInput}
-                  onChange={(e) => setChatInput(e.target.value)}
-                  placeholder="Speak or type to your partner e.g. 'I think greedy works for DP'..."
-                  className="flex-1 px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs font-mono text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500"
-                />
-                <button
-                  type="submit"
-                  disabled={!chatInput.trim() || isLoadingResponse}
-                  className="px-4 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-mono text-xs font-bold transition-all shadow-md flex items-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <Send className="w-3.5 h-3.5" />
-                  <span>{isLoadingResponse ? 'Sending...' : 'Send'}</span>
-                </button>
-              </form>
             </div>
           </div>
         )}
@@ -787,5 +963,6 @@ export default function App() {
         {activeTab === 'voyager' && <VoyagerSkillLibrary />}
       </main>
     </div>
+    </SmoothScrollProvider>
   );
 }

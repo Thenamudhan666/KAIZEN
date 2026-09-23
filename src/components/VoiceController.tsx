@@ -298,18 +298,18 @@ export const VoiceController: React.FC<VoiceControllerProps> = ({
   };
 
   return (
-    <div id="voice-orchestrator-panel" className="bg-[#0a0a0a] border border-[#333] p-4">
-      <div className="flex items-center justify-between pb-4 border-b border-[#333]">
-        <div className="flex items-center gap-2.5">
-          <div className="p-1 border border-[#00f0ff] text-[#00f0ff]">
+    <div id="voice-orchestrator-panel" className="rounded-2xl p-4 sm:p-5 border border-amber-500/20 bg-[#12151c]/90 backdrop-blur-xl shadow-2xl flex flex-col relative overflow-hidden">
+      <div className="flex items-center justify-between pb-3.5 border-b border-amber-500/15">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 via-amber-600 to-amber-700 flex items-center justify-center text-slate-950 font-bold shadow-[0_0_12px_rgba(245,158,11,0.4)]">
             <Radio className="w-4 h-4 animate-pulse" />
           </div>
           <div>
-            <h3 className="text-[10px] font-bold tracking-widest text-[#00f0ff] uppercase font-mono">
+            <h3 className="text-xs sm:text-sm font-bold tracking-wide text-white uppercase font-mono">
               Ultra-Low Latency Voice (WebRTC & VAD)
             </h3>
-            <p className="text-[9px] text-[#666] font-mono uppercase tracking-wider mt-0.5">
-              Silero VAD • Semantic EOU • Sub-800ms Turn-Taking
+            <p className="text-[10px] text-slate-400 font-mono uppercase tracking-wider mt-0.5">
+              Sub-800ms Time-To-First-Audio (TTFA) with continuous Barge-In listening
             </p>
           </div>
         </div>
@@ -319,34 +319,34 @@ export const VoiceController: React.FC<VoiceControllerProps> = ({
           <button
             id="toggle-tts-audio-btn"
             onClick={() => setSpeechSynthesisEnabled(!speechSynthesisEnabled)}
-            className={`p-2 rounded-lg border text-xs font-mono transition-all flex items-center gap-1.5 ${
+            className={`px-3 py-1.5 rounded-xl border text-xs font-mono transition-all flex items-center gap-1.5 cursor-pointer ${
               speechSynthesisEnabled
-                ? 'bg-slate-800 border-slate-700 text-cyan-300'
-                : 'bg-slate-950 border-slate-800 text-slate-500'
+                ? 'bg-amber-500/20 border-amber-400/40 text-amber-200'
+                : 'bg-black/30 border-white/10 text-slate-400'
             }`}
             title="Toggle Butler Voice Speech Synthesis"
           >
-            {speechSynthesisEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+            {speechSynthesisEnabled ? <Volume2 className="w-4 h-4 text-amber-400" /> : <VolumeX className="w-4 h-4 text-slate-400" />}
             <span className="hidden sm:inline">{speechSynthesisEnabled ? 'TTS ON' : 'TTS MUTED'}</span>
           </button>
 
           <button
             id="toggle-mic-input-btn"
             onClick={toggleListening}
-            className={`px-3.5 py-2 rounded-lg border text-xs font-mono font-bold tracking-wider transition-all flex items-center gap-2 shadow-lg ${
+            className={`px-4 py-2 rounded-xl border text-xs font-mono font-bold tracking-wider transition-all flex items-center gap-2 shadow-lg active:scale-95 cursor-pointer ${
               isListening
-                ? 'bg-emerald-500/20 border-emerald-500/60 text-emerald-300 shadow-emerald-950/50'
-                : 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700 hover:text-white'
+                ? 'bg-amber-500/20 border-amber-400/60 text-amber-300 shadow-[0_0_18px_rgba(245,158,11,0.35)]'
+                : 'bg-gradient-to-r from-amber-500 via-amber-600 to-amber-700 hover:from-amber-400 hover:to-amber-600 border-amber-300/40 text-slate-950 font-black shadow-[0_4px_16px_rgba(245,158,11,0.4)]'
             }`}
           >
             {isListening ? (
               <>
-                <Mic className="w-4 h-4 text-emerald-400 animate-pulse" />
+                <Mic className="w-4 h-4 text-amber-400 animate-pulse" />
                 <span>MIC LIVE</span>
               </>
             ) : (
               <>
-                <MicOff className="w-4 h-4 text-slate-400" />
+                <MicOff className="w-4 h-4 text-slate-950/80" />
                 <span>START VOICE</span>
               </>
             )}
@@ -355,22 +355,22 @@ export const VoiceController: React.FC<VoiceControllerProps> = ({
       </div>
 
       {/* WebSocket Connection Status */}
-      <div className="mt-3 flex items-center gap-2 px-3 py-2 bg-[#111] border border-[#333] text-[10px] font-mono">
+      <div className="mt-3 flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#151922] border border-amber-500/15 text-[10px] font-mono">
         <div
           className={`w-2 h-2 rounded-full ${
-            wsStatus === 'connected' ? 'bg-[#00ffaa] shadow-[0_0_6px_#00ffaa]' :
-            wsStatus === 'connecting' ? 'bg-[#ffaa00] animate-pulse shadow-[0_0_6px_#ffaa00]' :
-            wsStatus === 'error' ? 'bg-[#ff0055] shadow-[0_0_6px_#ff0055]' :
-            'bg-[#666]'
+            wsStatus === 'connected' ? 'bg-amber-400 shadow-[0_0_8px_rgba(245,158,11,0.9)]' :
+            wsStatus === 'connecting' ? 'bg-amber-400 animate-pulse shadow-[0_0_8px_rgba(245,158,11,0.9)]' :
+            wsStatus === 'error' ? 'bg-rose-500 shadow-[0_0_8px_rgba(251,113,133,0.9)]' :
+            'bg-slate-600'
           }`}
         />
         <span className={
-          wsStatus === 'connected' ? 'text-[#00ffaa]' :
-          wsStatus === 'connecting' ? 'text-[#ffaa00]' :
-          wsStatus === 'error' ? 'text-[#ff0055]' :
-          'text-[#666]'
+          wsStatus === 'connected' ? 'text-amber-400 font-semibold' :
+          wsStatus === 'connecting' ? 'text-amber-300 font-semibold' :
+          wsStatus === 'error' ? 'text-rose-400 font-semibold' :
+          'text-slate-400'
         }>
-          {wsStatus === 'connected' ? 'LIVE API CONNECTED' :
+          {wsStatus === 'connected' ? 'LIVE API CONNECTED (16kHz PCM)' :
            wsStatus === 'connecting' ? 'CONNECTING TO GEMINI LIVE API...' :
            wsStatus === 'error' ? 'CONNECTION ERROR' :
            'VOICE AGENT STANDBY'}
@@ -379,74 +379,74 @@ export const VoiceController: React.FC<VoiceControllerProps> = ({
 
       {/* Error Message */}
       {wsError && (
-        <div className="mt-2 p-2.5 bg-[#1a0011] border border-[#ff0055]/30 text-[11px] font-mono text-[#ff7799]">
-          <span className="font-bold text-[#ff0055]">⚠ </span>{wsError}
+        <div className="mt-2 p-3 rounded-xl bg-rose-950/40 border border-rose-500/30 text-[11px] font-mono text-rose-300">
+          <span className="font-bold">⚠ </span>{wsError}
         </div>
       )}
 
       {/* Real-time Voice Activity Detection (Silero VAD) Visualizer */}
-      <div className="mt-4 p-4 bg-[#111] border border-[#333] space-y-3">
+      <div className="mt-3 p-3.5 rounded-xl bg-[#151922] border border-amber-500/15 space-y-2.5 shadow-inner">
         <div className="flex items-center justify-between text-xs font-mono">
-          <span className="text-slate-400 flex items-center gap-1.5">
+          <span className="text-slate-300 flex items-center gap-1.5">
             <Zap className="w-3.5 h-3.5 text-amber-400" />
             <span>Neural VAD Energy Meter</span>
           </span>
-          <span className="text-cyan-400 font-bold">
+          <span className="text-amber-400 font-bold">
             {(micVolume * 100).toFixed(0)}% (Threshold: {(vadThreshold * 100).toFixed(0)}%)
           </span>
         </div>
 
         {/* Dynamic VAD Energy Level Bar */}
-        <div className="w-full h-3 rounded-full bg-slate-800 overflow-hidden relative">
+        <div className="w-full h-2.5 rounded-full bg-black/50 overflow-hidden relative border border-white/5 p-0.5">
           <div
-            className={`h-full transition-all duration-75 ${
-              micVolume > vadThreshold ? 'bg-gradient-to-r from-emerald-500 to-cyan-400' : 'bg-slate-600'
+            className={`h-full rounded-full transition-all duration-75 ${
+              micVolume > vadThreshold ? 'bg-gradient-to-r from-amber-500 via-amber-400 to-amber-600 shadow-[0_0_10px_rgba(245,158,11,0.6)]' : 'bg-amber-500/20'
             }`}
             style={{ width: `${Math.min(100, micVolume * 140)}%` }}
           />
           {/* Threshold Marker */}
           <div
-            className="absolute top-0 bottom-0 w-0.5 bg-amber-400 z-10 shadow-[0_0_8px_#f59e0b]"
+            className="absolute top-0 bottom-0 w-0.5 bg-amber-400 z-10 shadow-[0_0_6px_rgba(245,158,11,0.9)]"
             style={{ left: `${vadThreshold * 100}%` }}
           />
         </div>
 
-        <div className="flex items-center justify-between text-[11px] font-mono text-slate-400 pt-1">
-          <span>Semantic EOU Probability: <strong className="text-emerald-400">{(eouConfidence * 100).toFixed(0)}%</strong></span>
-          <span>Buffer: <strong className="text-slate-200">30ms PCM (16kHz)</strong></span>
+        <div className="flex items-center justify-between text-[10px] font-mono text-slate-400 pt-0.5">
+          <span>Semantic EOU Probability: <strong className="text-amber-400">{(eouConfidence * 100).toFixed(0)}%</strong></span>
+          <span>Buffer: <strong className="text-amber-300">30ms PCM (16kHz)</strong></span>
         </div>
       </div>
 
       {/* Sub-800ms Latency Budget Dashboard */}
-      <div className="mt-4 grid grid-cols-2 sm:grid-cols-6 gap-2 text-center text-[10px] font-mono">
-        <div className="p-2 bg-[#111] border border-[#333]">
-          <div className="text-[#666]">WebRTC Ingest</div>
-          <div className="text-[#00f0ff] font-bold text-xs mt-0.5">{latencyMetrics.webrtcLatencyMs} ms</div>
+      <div className="mt-3 grid grid-cols-2 sm:grid-cols-6 gap-2 text-center text-[10px] font-mono">
+        <div className="p-2.5 rounded-xl bg-[#151922] border border-amber-500/15">
+          <div className="text-slate-400 uppercase">WebRTC Ingest</div>
+          <div className="text-amber-300 font-bold text-xs mt-0.5">{latencyMetrics.webrtcLatencyMs} ms</div>
         </div>
-        <div className="p-2 bg-[#111] border border-[#333]">
-          <div className="text-[#666]">Silero VAD</div>
-          <div className="text-[#00f0ff] font-bold text-xs mt-0.5">{latencyMetrics.vadLatencyMs} ms</div>
+        <div className="p-2.5 rounded-xl bg-[#151922] border border-amber-500/15">
+          <div className="text-slate-400 uppercase">Silero VAD</div>
+          <div className="text-amber-300 font-bold text-xs mt-0.5">{latencyMetrics.vadLatencyMs} ms</div>
         </div>
-        <div className="p-2 bg-[#111] border border-[#333]">
-          <div className="text-[#666]">Deepgram STT</div>
-          <div className="text-[#00f0ff] font-bold text-xs mt-0.5">{latencyMetrics.sttLatencyMs} ms</div>
+        <div className="p-2.5 rounded-xl bg-[#151922] border border-amber-500/15">
+          <div className="text-slate-400 uppercase">Deepgram STT</div>
+          <div className="text-amber-300 font-bold text-xs mt-0.5">{latencyMetrics.sttLatencyMs} ms</div>
         </div>
-        <div className="p-2 bg-[#111] border border-[#333]">
-          <div className="text-[#666]">LLM TTFT</div>
-          <div className="text-[#00f0ff] font-bold text-xs mt-0.5">{latencyMetrics.ttftMs} ms</div>
+        <div className="p-2.5 rounded-xl bg-[#151922] border border-amber-500/15">
+          <div className="text-slate-400 uppercase">LLM TTFT</div>
+          <div className="text-amber-300 font-bold text-xs mt-0.5">{latencyMetrics.ttftMs} ms</div>
         </div>
-        <div className="p-2 bg-[#111] border border-[#333]">
-          <div className="text-[#666]">Clause Chunker</div>
-          <div className="text-[#00f0ff] font-bold text-xs mt-0.5">{latencyMetrics.chunkerLatencyMs} ms</div>
+        <div className="p-2.5 rounded-xl bg-[#151922] border border-amber-500/15">
+          <div className="text-slate-400 uppercase">Clause Chunker</div>
+          <div className="text-amber-300 font-bold text-xs mt-0.5">{latencyMetrics.chunkerLatencyMs} ms</div>
         </div>
-        <div className="p-2 border border-[#00f0ff] bg-[#001122]">
-          <div className="text-[#00f0ff] font-semibold">Total TTFA</div>
-          <div className="text-emerald-400 font-bold text-xs mt-0.5">~{latencyMetrics.totalRoundTripMs} ms</div>
+        <div className="p-2.5 rounded-xl bg-amber-950/30 border border-amber-500/30 shadow-[0_0_12px_rgba(245,158,11,0.15)]">
+          <div className="text-amber-400 font-semibold uppercase">Total TTFA</div>
+          <div className="text-amber-300 font-bold text-xs mt-0.5">~{latencyMetrics.totalRoundTripMs} ms</div>
         </div>
       </div>
 
       {/* Barge-In / Interrupt Controls & Context Reconciliation Box */}
-      <div className="mt-4 p-4 bg-[#111] border border-[#333] flex flex-col gap-2.5">
+      <div className="mt-3 p-3.5 rounded-xl bg-rose-950/15 border border-rose-500/30 flex flex-col gap-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-xs font-mono font-semibold text-rose-300">
             <ShieldAlert className="w-4 h-4 text-rose-400" />
@@ -457,10 +457,10 @@ export const VoiceController: React.FC<VoiceControllerProps> = ({
             id="manual-barge-in-btn"
             onClick={() => handleTriggerBargeIn("User clicked manual barge-in button")}
             disabled={!isSpeaking}
-            className={`px-3 py-1.5 rounded-lg border text-xs font-mono font-bold tracking-wide transition-all flex items-center gap-1.5 ${
+            className={`px-3 py-1.5 rounded-xl border text-xs font-mono font-bold tracking-wide transition-all flex items-center gap-1.5 ${
               isSpeaking
-                ? 'bg-rose-600/30 border-rose-500 text-rose-200 hover:bg-rose-600/50 shadow-lg shadow-rose-950 cursor-pointer animate-pulse'
-                : 'bg-slate-900 border-slate-800 text-slate-600 cursor-not-allowed'
+                ? 'bg-rose-500/25 border-rose-400 text-rose-300 hover:bg-rose-500/35 shadow-[0_0_14px_rgba(244,63,94,0.4)] cursor-pointer animate-pulse'
+                : 'bg-black/30 border-white/5 text-slate-500 cursor-not-allowed'
             }`}
           >
             <ShieldAlert className="w-3.5 h-3.5" />
@@ -469,7 +469,7 @@ export const VoiceController: React.FC<VoiceControllerProps> = ({
         </div>
 
         {lastReconciliation && (
-          <div className="p-2.5 rounded-lg bg-rose-950/30 border border-rose-800/40 text-[11px] font-mono text-rose-200">
+          <div className="p-2.5 rounded-lg bg-rose-950/30 border border-rose-500/25 text-[11px] font-mono text-rose-300">
             <div className="font-bold text-rose-300 mb-1 flex items-center gap-1">
               <span>Context Reconciled (Interruption #{interruptionCount})</span>
             </div>
@@ -480,12 +480,13 @@ export const VoiceController: React.FC<VoiceControllerProps> = ({
 
       {/* Persona Spoken Output Monitor */}
       {activeSpeechText && (
-        <div className="mt-3 p-3 rounded-xl bg-cyan-950/20 border border-cyan-500/30 text-xs font-mono">
-          <div className="text-cyan-400 font-semibold mb-1 flex items-center gap-1.5">
+        <div className="mt-3 p-3.5 rounded-xl relative overflow-hidden border border-amber-500/25 bg-[#151922] text-xs font-mono">
+          <div className="absolute left-0 top-2 bottom-2 w-1 brand-gradient rounded-full shadow-[0_0_8px_rgba(245,158,11,0.6)]"></div>
+          <div className="text-amber-400 font-semibold mb-1 flex items-center gap-1.5 pl-2">
             <Volume2 className="w-3.5 h-3.5" />
             <span>Active Butler Spoken Audio Stream (1-2 sentences):</span>
           </div>
-          <p className="text-slate-200 italic font-sans text-sm">"{activeSpeechText}"</p>
+          <p className="text-white italic font-sans text-sm pl-2">"{activeSpeechText}"</p>
         </div>
       )}
     </div>
