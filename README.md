@@ -11,6 +11,11 @@ An autonomous, local-first Socratic AI companion engineered as a native OS deskt
 
 ---
 
+# YOUTUBE LINK 
+https://youtu.be/15YEf9lTi2c?si=FnWbJ3V_XjJ6Mybw
+
+---
+
 ## Key Capabilities
 
 - **Native Windows Desktop Experience**: Standalone frameless window powered by Electron with custom draggable title bar, window controls, and automatic microphone permissions.
