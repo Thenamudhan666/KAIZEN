@@ -1,12 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BookOpen, Sparkles, CheckCircle2, Plus } from 'lucide-react';
 import { VoyagerSkill } from '../types';
 
 interface VoyagerSkillLibraryProps {
   onSkillSynthesized?: () => void;
+  incomingSkill?: VoyagerSkill | null;
 }
 
-export const VoyagerSkillLibrary: React.FC<VoyagerSkillLibraryProps> = ({ onSkillSynthesized }) => {
+export const VoyagerSkillLibrary: React.FC<VoyagerSkillLibraryProps> = ({
+  onSkillSynthesized,
+  incomingSkill,
+}) => {
   const [skills, setSkills] = useState<VoyagerSkill[]>([
     {
       id: 'SKILL-DP-084',
@@ -52,6 +56,13 @@ end tell`,
   const [selectedSkill, setSelectedSkill] = useState<VoyagerSkill | null>(skills[0]);
   const [problemSolvedInput, setProblemSolvedInput] = useState('2D Dynamic Programming Interval Recurrence');
   const [isSynthesizing, setIsSynthesizing] = useState(false);
+
+  useEffect(() => {
+    if (incomingSkill) {
+      setSkills((prev) => [incomingSkill, ...prev.filter((s) => s.id !== incomingSkill.id)]);
+      setSelectedSkill(incomingSkill);
+    }
+  }, [incomingSkill]);
 
   const handleSynthesizeSkill = async (e: React.FormEvent) => {
     e.preventDefault();

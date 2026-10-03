@@ -1,15 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { GitCommit, Sparkles, Brain, Cpu, MessageSquare, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { SocraticGraphData, MultiAgentDeliberation } from '../types';
 
 interface SocraticDebatePanelProps {
   onAnalyzeProposition: (text: string) => Promise<SocraticGraphData | null>;
   onRunDeliberation: (topic: string) => Promise<MultiAgentDeliberation | null>;
+  externalSocraticResult?: SocraticGraphData | null;
 }
 
 export const SocraticDebatePanel: React.FC<SocraticDebatePanelProps> = ({
   onAnalyzeProposition,
   onRunDeliberation,
+  externalSocraticResult,
 }) => {
   const [activeTab, setActiveTab] = useState<'socratic' | 'deliberation'>('socratic');
   const [propositionInput, setPropositionInput] = useState(
@@ -49,6 +51,13 @@ export const SocraticDebatePanel: React.FC<SocraticDebatePanelProps> = ({
     student: "Synthesized consensus: Rather than supplying the code directly, highlight the length-based window expansion. The butler will remark on their recursion depth and gently nudge them toward checking the 2-element base intervals.",
     finalSpokenResponse: "If I might intervene, sir—your recursive exploration is currently treating overlapping intervals as independent entities. Might we consider how the length of the window dictates the base cases?",
   });
+
+  useEffect(() => {
+    if (externalSocraticResult) {
+      setSocraticResult(externalSocraticResult);
+      setActiveTab('socratic');
+    }
+  }, [externalSocraticResult]);
 
   const handleSocraticSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

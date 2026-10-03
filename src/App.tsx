@@ -18,6 +18,7 @@ import {
   SocraticGraphData,
   MultiAgentDeliberation,
   SupervisorIntervention,
+  VoyagerSkill,
 } from './types';
 import {
   Bot,
@@ -144,6 +145,8 @@ export default function App() {
   const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
   const [activeSpeechText, setActiveSpeechText] = useState<string>('');
   const [isConnected, setIsConnected] = useState(false);
+  const [livekitSocraticData, setLivekitSocraticData] = useState<SocraticGraphData | null>(null);
+  const [livekitVoyagerSkill, setLivekitVoyagerSkill] = useState<VoyagerSkill | null>(null);
   const speakingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [messages, setMessages] = useState<ChatMessage[]>([
@@ -409,6 +412,49 @@ export default function App() {
     setIsSpeaking(true);
     setAgentState('speaking');
     startSpeakingTimer(intervention.proactiveVocalPrompt);
+  };
+
+  // LiveKit Agent Extension Handlers
+  const handleSocraticDataFromAgent = (data: any) => {
+    if (!data) return;
+    setLivekitSocraticData(data);
+    const socraticMsg: ChatMessage = {
+      id: Date.now().toString(),
+      sender: 'kaizen',
+      text: `[SOCRATIC ARGUMENTATION ENGINE]\nVerdict: ${data.verdict?.isValid ? 'LOGICALLY SOUND' : `FALLACY DETECTED (${data.verdict?.flawType || 'Structural Coupling'})`}\nProbing Question: "${data.probingQuestion || data.probing_question}"`,
+      timestamp: Date.now(),
+      socraticData: data,
+    };
+    setMessages((prev) => [...prev, socraticMsg]);
+    if (data.probingQuestion || data.probing_question) {
+      const q = data.probingQuestion || data.probing_question;
+      setActiveSpeechText(q);
+      setIsSpeaking(true);
+      startSpeakingTimer(q);
+    }
+  };
+
+  const handleVoyagerDataFromAgent = (data: any) => {
+    if (!data) return;
+    const formattedSkill: VoyagerSkill = {
+      id: data.skillId || data.skill_id || `SKILL-${Date.now().toString().slice(-4)}`,
+      title: data.skillTitle || data.title || 'Dynamic Verified Skill',
+      domain: data.domain || data.skillDomain || 'Algorithms',
+      filePath: data.relativeFilePath || data.filePath || 'vault/skills/skill.md',
+      markdownContent: data.markdownContent || 'Compiled Voyager Skill',
+      executableCode: data.executableCode || data.code || '',
+      unitTestSummary: data.unitTestSummary || 'Sandbox Assertions Verified',
+      created: new Date().toISOString().split('T')[0],
+      invocations: 1,
+    };
+    setLivekitVoyagerSkill(formattedSkill);
+    const voyagerMsg: ChatMessage = {
+      id: Date.now().toString(),
+      sender: 'kaizen',
+      text: `[VOYAGER LIFELONG SKILL COMPILER]\nSkill ID: ${formattedSkill.id}\nSandbox Unit Tests: ${data.testsPassed !== false ? 'PASSED (Sandbox Verified)' : 'FAILED'}\nPersisted to Vault: ${formattedSkill.filePath}`,
+      timestamp: Date.now(),
+    };
+    setMessages((prev) => [...prev, voyagerMsg]);
   };
 
   // Socratic Proposition Analyzer
@@ -749,6 +795,8 @@ export default function App() {
                 activeSpeechText={activeSpeechText}
                 agentState={agentState}
                 onStateChange={setAgentState}
+                onSocraticUpdate={handleSocraticDataFromAgent}
+                onVoyagerUpdate={handleVoyagerDataFromAgent}
               />
             </div>
 
@@ -946,6 +994,8 @@ export default function App() {
                 activeSpeechText={activeSpeechText}
                 agentState={agentState}
                 onStateChange={setAgentState}
+                onSocraticUpdate={handleSocraticDataFromAgent}
+                onVoyagerUpdate={handleVoyagerDataFromAgent}
               />
             </div>
           </div>
@@ -956,11 +1006,16 @@ export default function App() {
           <SocraticDebatePanel
             onAnalyzeProposition={handleAnalyzeProposition}
             onRunDeliberation={handleRunDeliberation}
+            externalSocraticResult={livekitSocraticData}
           />
         )}
 
         {/* Tab 7: Phase 5 Voyager Lifelong Skills */}
-        {activeTab === 'voyager' && <VoyagerSkillLibrary />}
+        {activeTab === 'voyager' && (
+          <VoyagerSkillLibrary
+            incomingSkill={livekitVoyagerSkill}
+          />
+        )}
       </main>
     </div>
     </SmoothScrollProvider>

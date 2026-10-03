@@ -12,7 +12,11 @@
     "clean": "rm -rf dist server.js",
     "lint": "tsc --noEmit",
     "electron:dev": "node scripts/clean-ports.cjs && concurrently --kill-others \"tsx server.ts\" \"wait-on http://localhost:3000/api/health && electron .\"",
-    "electron:build": "npm run build && electron-builder"
+    "electron:build": "npm run build && electron-builder",
+    "agent": "python agent/kaizen_agent.py start",
+    "bench": "bash bench/run_fdb_v3.sh",
+    "bench:smoke": "bash bench/run_fdb_v3.sh --limit 3",
+    "test:agent": "uv run --with pytest --with pydantic pytest agent/tests"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
@@ -24,6 +28,8 @@
     "firebase": "^12.18.0",
     "gsap": "^3.15.0",
     "lenis": "^1.3.26",
+    "livekit-client": "^2.22.3",
+    "livekit-server-sdk": "^2.19.1",
     "lucide-react": "^0.546.0",
     "motion": "^12.23.24",
     "react": "^19.0.1",

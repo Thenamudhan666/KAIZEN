@@ -1,0 +1,12 @@
+--- a/v3/run_tool_benchmark.py
++++ b/v3/run_tool_benchmark.py
+@@ -131,8 +131,9 @@ def load_asr_model():
+     print("🔊 Loading ASR model...")
+     import nemo.collections.asr as nemo_asr
++    import torch
+     model = nemo_asr.models.ASRModel.from_pretrained(model_name=ASR_MODEL_NAME)
+-    if hasattr(model, 'cuda'):
++    if hasattr(model, 'cuda') and torch.cuda.is_available():
+         model = model.cuda()
+     print("✅ ASR model loaded")
+     return model

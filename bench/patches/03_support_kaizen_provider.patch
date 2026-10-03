@@ -1,0 +1,6 @@
+--- a/v3/run_all_evaluations_released.sh
++++ b/v3/run_all_evaluations_released.sh
+@@ -23,3 +23,3 @@
+ # Edit this list to include the providers you have run inference for:
+-PROVIDERS=("gpt_realtime" "gemini2_5" "grok" "gemini3_1" "ultravox" "cascaded")
++PROVIDERS=("gpt_realtime" "gemini2_5" "grok" "gemini3_1" "ultravox" "cascaded" "kaizen")

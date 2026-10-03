@@ -1,9 +1,9 @@
 import express from "express";
 import path from "path";
 import { createServer as createViteServer } from "vite";
-import { GoogleGenAI, Type, LiveServerMessage, Modality } from "@google/genai";
+import { GoogleGenAI, Type } from "@google/genai";
 import dotenv from "dotenv";
-import { WebSocketServer } from "ws";
+import { AccessToken } from "livekit-server-sdk";
 
 dotenv.config();
 
@@ -641,6 +641,41 @@ export function solveIntervalPartition(arr: number[]): number {
   }
 });
 
+// API: LiveKit Token Dispatcher for WebRTC Voice Agent
+app.get("/api/livekit/token", async (req, res) => {
+  try {
+    const room = (req.query.room as string) || "kaizen-cockpit";
+    const identity = (req.query.identity as string) || `user-${Date.now().toString().slice(-4)}`;
+    const apiKey = process.env.LIVEKIT_API_KEY || "devkey";
+    const apiSecret = process.env.LIVEKIT_API_SECRET || "secret";
+    const livekitUrl = process.env.LIVEKIT_URL || "ws://127.0.0.1:7880";
+
+    const at = new AccessToken(apiKey, apiSecret, {
+      identity,
+      name: "KAIZEN Operator",
+    });
+    at.addGrant({
+      roomJoin: true,
+      room,
+      canPublish: true,
+      canSubscribe: true,
+      canPublishData: true,
+    });
+
+    const token = await at.toJwt();
+    res.json({
+      token,
+      url: livekitUrl,
+      room,
+      identity,
+      framework: "LiveKit Agents (Full-Duplex WebRTC)",
+    });
+  } catch (err: any) {
+    console.error("[KAIZEN] LiveKit token generation error:", err);
+    res.status(500).json({ error: err.message || "Failed to generate LiveKit token" });
+  }
+});
+
 // Vite Middleware & SPA serving
 async function start() {
   if (process.env.NODE_ENV !== "production") {
@@ -657,92 +692,9 @@ async function start() {
     });
   }
 
-  const httpServer = app.listen(PORT, "0.0.0.0", () => {
+  app.listen(PORT, "0.0.0.0", () => {
     console.log(`[KAIZEN Partner Core] Server listening on http://0.0.0.0:${PORT}`);
-  });
-
-  // Setup WebSocket Server for Live API
-  const wss = new WebSocketServer({ server: httpServer, path: "/live" });
-
-  wss.on("connection", async (clientWs) => {
-    const ai = getGemini();
-    if (!ai) {
-      console.warn("No Gemini API key available for Live API.");
-      clientWs.send(JSON.stringify({ error: "No GEMINI_API_KEY configured. Set it in your .env file." }));
-      clientWs.close(1008, "No API key");
-      return;
-    }
-
-    try {
-      const session = await ai.live.connect({
-        model: "gemini-3.1-flash-live-preview",
-        config: {
-          responseModalities: [Modality.AUDIO],
-          speechConfig: {
-            voiceConfig: { prebuiltVoiceConfig: { voiceName: "Aoede" } },
-          },
-          systemInstruction: "You are KAIZEN, an erudite British butler with dry wit and an economy of words. Provide ultra-concise, sharp answers in 1 to 2 sentences.",
-        },
-        callbacks: {
-          onerror: (e) => {
-            console.error("Live API WS Error:", e);
-            try {
-              clientWs.send(JSON.stringify({ error: "Live API stream error" }));
-            } catch {}
-          },
-          onclose: (e: any) => {
-            console.log("Live API WS Closed:", e);
-            try {
-              const reason = e?.reason || "Live session closed";
-              clientWs.send(JSON.stringify({ error: reason }));
-              clientWs.close(1011, reason);
-            } catch {}
-          },
-          onmessage: (message: LiveServerMessage) => {
-            
-            const audio = message.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
-            if (audio) {
-              try {
-                clientWs.send(JSON.stringify({ audio }));
-              } catch {}
-            }
-            if (message.serverContent?.interrupted) {
-              try {
-                clientWs.send(JSON.stringify({ interrupted: true }));
-              } catch {}
-            }
-          },
-        },
-      });
-
-      clientWs.on("message", (data) => {
-        try {
-          const { audio, text } = JSON.parse(data.toString());
-          if (text) {
-            session.sendClientContent({ turns: [{ role: "user", parts: [{ text }] }], turnComplete: true });
-          }
-          if (audio) {
-            session.sendRealtimeInput({
-              audio: { data: audio, mimeType: "audio/pcm;rate=16000" },
-            });
-          }
-        } catch (error: any) {
-          console.error("Live API WS message error", error); 
-        }
-      });
-      
-      clientWs.on("close", () => {
-        console.log("Client disconnected from Live API");
-        session.close();
-      });
-
-    } catch (error: any) {
-      console.error("Failed to connect to Live API:", error?.message || error);
-      try {
-        clientWs.send(JSON.stringify({ error: `Failed to connect to Gemini Live API: ${error?.message || 'Unknown error'}. Check your API key and network.` }));
-      } catch {}
-      clientWs.close(1011, "Live API connection failed");
-    }
+    console.log(`[KAIZEN Architecture] LiveKit Token Endpoint: http://localhost:${PORT}/api/livekit/token`);
   });
 }
 

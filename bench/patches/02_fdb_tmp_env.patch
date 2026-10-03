@@ -1,0 +1,22 @@
+--- a/v3/run_tool_benchmark.py
++++ b/v3/run_tool_benchmark.py
+@@ -383,3 +383,4 @@ def process_single(pid, example_id, input_path, provider, data, asr_model,
+     if room_name:
+         try:
+-            hb_path = Path("/tmp/agent_heartbeat.log")
++            _fdb_tmp = os.environ.get("FDB_TMP", "/tmp")
++            hb_path = Path(_fdb_tmp) / "agent_heartbeat.log"
+             if hb_path.exists():
+@@ -435,3 +436,4 @@ def process_single(pid, example_id, input_path, provider, data, asr_model,
+     if room_name:
+         try:
+-            telemetry_path = Path("/tmp/agent_tool_calls.log")
++            _fdb_tmp = os.environ.get("FDB_TMP", "/tmp")
++            telemetry_path = Path(_fdb_tmp) / "agent_tool_calls.log"
+             if telemetry_path.exists():
+@@ -485,3 +487,4 @@ def main():
+     # Clear heartbeat log at start of run
+-    hb_path = Path("/tmp/agent_heartbeat.log")
++    _fdb_tmp = os.environ.get("FDB_TMP", "/tmp")
++    hb_path = Path(_fdb_tmp) / "agent_heartbeat.log"
+     if hb_path.exists() and not args.asr_only:
