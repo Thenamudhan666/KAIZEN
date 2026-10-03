@@ -29,3 +29,5 @@ __pycache__/
 .venv/
 bench/work_fdb/
 
+# Binaries
+bin/

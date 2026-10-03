@@ -15,6 +15,13 @@ import sys
 import time
 import logging
 from pathlib import Path
+
+# Safe UTF-8 encoding configuration for Windows terminals & subprocess runners
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+
 from dotenv import load_dotenv
 
 # Load root .env and local env
@@ -28,6 +35,7 @@ if "GEMINI_API_KEY" in os.environ and "GOOGLE_API_KEY" not in os.environ:
 
 from livekit import agents
 from livekit.agents import Agent, AgentSession, AgentServer, llm
+from livekit.plugins import google
 from tools.fdb_tools import FDBBenchmarkTools, LatencyTracker
 from tools.socratic_tool import SocraticArgumentationTools
 from tools.voyager_tool import VoyagerSkillTools
@@ -74,8 +82,6 @@ DEMO_PROMPT = (
 
 def get_realtime_model():
     """Instantiate Google Gemini 3.1 Flash Live realtime model."""
-    from livekit.plugins import google
-
     model_name = os.getenv("GEMINI_LIVE_MODEL", "gemini-3.1-flash-live-preview")
     voice_name = os.getenv("GOOGLE_VOICE", "Aoede")
     logging.info(f"Connecting to Gemini Realtime: model={model_name}, voice={voice_name}")
@@ -102,7 +108,7 @@ async def entrypoint(ctx: agents.JobContext):
     with open(heartbeat_path, "a", encoding="utf-8") as f:
         f.write(f"!!! AGENT JOINING ROOM: {ctx.room.name} at {time.ctime()} !!!\n")
 
-    print(f"🏛️  KAIZEN Agent joining room: {ctx.room.name} (mode={KAIZEN_MODE}, latency={LATENCY_PROFILE})")
+    print(f"[KAIZEN] Agent joining room: {ctx.room.name} (mode={KAIZEN_MODE}, latency={LATENCY_PROFILE})")
 
     model = get_realtime_model()
     tracker = LatencyTracker()
@@ -139,7 +145,7 @@ async def entrypoint(ctx: agents.JobContext):
         room=ctx.room,
         agent=KaizenVoiceAgent(mode=KAIZEN_MODE),
     )
-    print(f"✅ KAIZEN Agent active and listening in room {ctx.room.name}")
+    print(f"[KAIZEN] Agent active and listening in room {ctx.room.name}")
 
 
 if __name__ == "__main__":
