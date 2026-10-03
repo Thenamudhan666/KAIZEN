@@ -14,12 +14,12 @@
     "electron:dev": "node scripts/clean-ports.cjs && concurrently --kill-others \"tsx server.ts\" \"wait-on http://localhost:3000/api/health && electron .\"",
     "electron:build": "npm run build && electron-builder",
     "livekit": "node scripts/run-livekit.cjs",
+    "app": "npm run electron:dev",
     "agent": "uv run --project agent python agent/kaizen_agent.py dev",
     "agent:start": "uv run --project agent python agent/kaizen_agent.py start",
-    "agent:console": "uv run --project agent python agent/kaizen_agent.py console",
-    "bench": "bash bench/run_fdb_v3.sh",
-    "bench:smoke": "bash bench/run_fdb_v3.sh --limit 3",
-    "test:agent": "uv run --with pytest --with pydantic pytest agent/tests"
+    "agent:console": "python agent.py console",
+    "bench": "bash run_benchmark.sh",
+    "bench:fdb": "python evaluate.py benchmark_results.json"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",

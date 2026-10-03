@@ -1,0 +1,10 @@
+# KAIZEN Theme 05: Interruptible Real-Time Agents
+# LiveKit Cascaded Pipeline Requirements
+
+livekit-agents>=1.3.0
+livekit-plugins-openai>=1.3.0
+livekit-plugins-silero>=1.3.0
+livekit-plugins-google>=1.3.0
+livekit-api>=1.0.0
+python-dotenv>=1.0.0
+pydantic>=2.0.0
