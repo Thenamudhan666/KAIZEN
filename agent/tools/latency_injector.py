@@ -80,6 +80,8 @@ class LatencyInjector:
         self.call_log = []
 
     def _get_profile(self, api_name):
+        if not self.enabled or self.default_profile.name == "instant":
+            return LATENCY_PROFILES["instant"]
         if api_name in self.per_api_profiles:
             profile_name = self.per_api_profiles[api_name]
         elif api_name in API_LATENCY_DEFAULTS:

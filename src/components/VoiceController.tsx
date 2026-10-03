@@ -39,6 +39,13 @@ export const VoiceController: React.FC<VoiceControllerProps> = ({
   const audioCtxRef = useRef<AudioContext | null>(null);
   const animFrameRef = useRef<number | null>(null);
 
+  // Sync mute state to all active WebRTC audio elements
+  useEffect(() => {
+    audioElementsRef.current.forEach((el) => {
+      el.muted = !speechSynthesisEnabled;
+    });
+  }, [speechSynthesisEnabled]);
+
   // Cleanup on unmount
   useEffect(() => {
     return () => {
@@ -151,12 +158,18 @@ export const VoiceController: React.FC<VoiceControllerProps> = ({
           if (track.kind === Track.Kind.Audio) {
             console.log(`[KAIZEN] Subscribed to agent audio track from ${participant.identity}`);
             const element = track.attach();
+            element.muted = !speechSynthesisEnabled;
             audioElementsRef.current.push(element);
-            onStateChange('speaking');
+          }
+        });
 
-            element.onended = () => {
-              onStateChange('idle');
-            };
+        // Accurate Agent Speaking Detection (via LiveKit Server-Side VAD audio levels)
+        room.on(RoomEvent.ActiveSpeakersChanged, (speakers) => {
+          const isAgentSpeaking = speakers.some((s) => !s.isLocal);
+          if (isAgentSpeaking) {
+            onStateChange('speaking');
+          } else {
+            onStateChange('listening');
           }
         });
 
@@ -201,12 +214,22 @@ export const VoiceController: React.FC<VoiceControllerProps> = ({
         }
         await room.connect(connectUrl, token);
 
-        // Step 4: Publish Local Microphone Track
-        await room.localParticipant.setMicrophoneEnabled(true);
+        // Step 4: Publish Local Microphone Track with Hardware Echo Cancellation
+        await room.localParticipant.setMicrophoneEnabled(true, {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+        });
 
         // Step 5: VAD Audio Visualizer for UI Energy Meter
         try {
-          const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          const micStream = await navigator.mediaDevices.getUserMedia({
+            audio: {
+              echoCancellation: true,
+              noiseSuppression: true,
+              autoGainControl: true,
+            },
+          });
           const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
           audioCtxRef.current = audioCtx;
           const source = audioCtx.createMediaStreamSource(micStream);
@@ -224,10 +247,7 @@ export const VoiceController: React.FC<VoiceControllerProps> = ({
             const vol = sum / bufferLength / 255;
             setMicVolume(vol);
 
-            if (vol > vadThreshold && agentState === 'speaking') {
-              handleTriggerBargeIn('User voice interruption via VAD');
-            }
-
+            // Energy meter is visual only; LiveKit's native WebRTC VAD handles turn-taking
             animFrameRef.current = requestAnimationFrame(updateVolume);
           };
           updateVolume();

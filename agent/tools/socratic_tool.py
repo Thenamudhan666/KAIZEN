@@ -73,21 +73,26 @@ def run_socratic_analysis(proposition: str, domain: str = "Algorithm & Logic") -
                 "Extract atomic claims into an argumentation graph, find structural/logical fallacies, "
                 "and ask a razor-sharp probing question without revealing the answer."
             )
-            response = client.models.generate_content(
-                model="gemini-2.5-flash",
-                contents=prompt,
-                config=types.GenerateContentConfig(
-                    response_mime_type="application/json",
-                    response_schema=SocraticAnalysisResult,
-                    system_instruction=(
-                        "You are the KAIZEN Socratic Argumentation Engine. "
-                        "Deconstruct claims into Premise, Assumption, Claim, and Hypothesis nodes. "
-                        "Formulate a probing question that challenges implicit fallacies."
-                    ),
-                ),
-            )
-            if response.text:
-                return json.loads(response.text)
+            models_to_try = ["gemini-3.5-flash-lite", "gemini-flash-lite-latest", "gemini-3.1-flash-lite"]
+            for model_name in models_to_try:
+                try:
+                    response = client.models.generate_content(
+                        model=model_name,
+                        contents=prompt,
+                        config=types.GenerateContentConfig(
+                            response_mime_type="application/json",
+                            response_schema=SocraticAnalysisResult,
+                            system_instruction=(
+                                "You are the KAIZEN Socratic Argumentation Engine. "
+                                "Deconstruct claims into Premise, Assumption, Claim, and Hypothesis nodes. "
+                                "Formulate a probing question that challenges implicit fallacies."
+                            ),
+                        ),
+                    )
+                    if response and response.text:
+                        return json.loads(response.text)
+                except Exception:
+                    continue
         except Exception as e:
             logging.warning(f"Gemini Socratic extraction failed, using deterministic logic engine: {e}")
 

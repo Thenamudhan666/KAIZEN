@@ -191,8 +191,8 @@ export default function App() {
     if (speakingTimeoutRef.current) {
       clearTimeout(speakingTimeoutRef.current);
     }
-    // ~60ms per character, min 3s, max 15s
-    const duration = Math.max(3000, Math.min(15000, text.length * 60));
+    // Proportional speaking duration: ~35ms per character, min 1.5s, max 6s
+    const duration = Math.max(1500, Math.min(6000, text.length * 35));
     speakingTimeoutRef.current = setTimeout(() => {
       setIsSpeaking(false);
       setAgentState('idle');
@@ -284,7 +284,7 @@ export default function App() {
     return () => clearInterval(interval);
   }, [agentState]);
 
-  // Conversational Handler
+  // Conversational Handler with Real-Time Streaming (Sub-second TTFT)
   const handleSendMessage = async (textToSend: string) => {
     if (!textToSend.trim()) return;
 
@@ -295,14 +295,25 @@ export default function App() {
       timestamp: Date.now(),
     };
 
-    setMessages((prev) => [...prev, userMsg]);
+    const botMsgId = (Date.now() + 1).toString();
+    const botMsgPlaceholder: ChatMessage = {
+      id: botMsgId,
+      sender: 'kaizen',
+      text: '',
+      timestamp: Date.now() + 1,
+    };
+
+    setMessages((prev) => [...prev, userMsg, botMsgPlaceholder]);
     setChatInput('');
     setAgentState('reasoning');
     setIsLoadingResponse(true);
     setIsInterrupted(false);
 
+    let accumulatedText = '';
+    let parsedActions: ActionItem[] = [];
+
     try {
-      const response = await fetch('/api/gemini/converse', {
+      const response = await fetch('/api/gemini/converse/stream', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -312,54 +323,125 @@ export default function App() {
         }),
       });
 
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to fetch response');
+      if (!response.ok || !response.body) {
+        throw new Error(`Streaming failed: HTTP ${response.status}`);
       }
-      
-      const botText = data.text || 'Indeed, sir.';
 
-      const parsedActions: ActionItem[] = (data.actions || []).map(
-        (a: any, idx: number) => ({
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n\n');
+        buffer = lines.pop() || '';
+
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (trimmed.startsWith('data: ')) {
+            try {
+              const data = JSON.parse(trimmed.slice(6));
+              if (data.chunk) {
+                accumulatedText += data.chunk;
+                setAgentState('speaking');
+                setIsLoadingResponse(false);
+                setMessages((prev) =>
+                  prev.map((m) => (m.id === botMsgId ? { ...m, text: accumulatedText } : m))
+                );
+              }
+              if (data.done) {
+                if (data.text) accumulatedText = data.text;
+                if (data.actions && data.actions.length > 0) {
+                  parsedActions = data.actions.map((a: any, idx: number) => ({
+                    id: `${Date.now()}-${idx}`,
+                    tag: a.tag,
+                    payload: a.payload,
+                    status: 'queued',
+                    timestamp: Date.now(),
+                  }));
+                  setActionsQueue((prev) => [...parsedActions, ...prev]);
+                }
+              }
+            } catch (jsonErr) {
+              // Partial line parse error, continue
+            }
+          }
+        }
+      }
+
+      const finalBotText = accumulatedText || 'Indeed, sir.';
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === botMsgId
+            ? {
+                ...m,
+                text: finalBotText,
+                actions: parsedActions.length > 0 ? parsedActions : undefined,
+              }
+            : m
+        )
+      );
+
+      setActiveSpeechText(finalBotText);
+      setIsSpeaking(true);
+      setAgentState('speaking');
+      startSpeakingTimer(finalBotText);
+    } catch (err: any) {
+      console.warn('Streaming converse failed, falling back to standard endpoint:', err);
+      try {
+        const fallbackRes = await fetch('/api/gemini/converse', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: textToSend,
+            voiceMode: voiceModeBrevity,
+            activeContext: 'User collaborating in terminal with LeetCode & systems architecture.',
+          }),
+        });
+        const data = await fallbackRes.json();
+        const fallbackText = data.text || 'Indeed, sir.';
+        const actions: ActionItem[] = (data.actions || []).map((a: any, idx: number) => ({
           id: `${Date.now()}-${idx}`,
           tag: a.tag,
           payload: a.payload,
           status: 'queued',
           timestamp: Date.now(),
-        })
-      );
-
-      if (parsedActions.length > 0) {
-        setActionsQueue((prev) => [...parsedActions, ...prev]);
+        }));
+        if (actions.length > 0) setActionsQueue((prev) => [...actions, ...prev]);
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === botMsgId
+              ? {
+                  ...m,
+                  text: fallbackText,
+                  actions: actions.length > 0 ? actions : undefined,
+                }
+              : m
+          )
+        );
+        setActiveSpeechText(fallbackText);
+        setIsSpeaking(true);
+        setAgentState('speaking');
+        startSpeakingTimer(fallbackText);
+      } catch (fallbackErr: any) {
+        console.error('Conversation fallback error:', fallbackErr);
+        setAgentState('idle');
+        setIsSpeaking(false);
+        setActiveSpeechText('');
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === botMsgId
+              ? {
+                  ...m,
+                  text: `[SYSTEM ERROR]: ${fallbackErr.message || 'Connection failed'}. Check your server and API key.`,
+                }
+              : m
+          )
+        );
       }
-
-      const botMsg: ChatMessage = {
-        id: (Date.now() + 1).toString(),
-        sender: 'kaizen',
-        text: botText,
-        timestamp: Date.now(),
-        actions: parsedActions.length > 0 ? parsedActions : undefined,
-      };
-
-      setMessages((prev) => [...prev, botMsg]);
-      setActiveSpeechText(botText);
-      setIsSpeaking(true);
-      setAgentState('speaking');
-      startSpeakingTimer(botText);
-    } catch (err: any) {
-      console.error('Conversation error:', err);
-      setAgentState('idle');
-      setIsSpeaking(false);
-      setActiveSpeechText('');
-      
-      const errorMsg: ChatMessage = {
-        id: (Date.now() + 1).toString(),
-        sender: 'kaizen',
-        text: `[SYSTEM ERROR]: ${err.message || 'Connection failed'}. Check your server and API key.`,
-        timestamp: Date.now(),
-      };
-      setMessages((prev) => [...prev, errorMsg]);
     } finally {
       setIsLoadingResponse(false);
     }
