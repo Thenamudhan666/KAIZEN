@@ -648,7 +648,15 @@ app.get("/api/livekit/token", async (req, res) => {
     const identity = (req.query.identity as string) || `user-${Date.now().toString().slice(-4)}`;
     const apiKey = process.env.LIVEKIT_API_KEY || "devkey";
     const apiSecret = process.env.LIVEKIT_API_SECRET || "secret";
-    const livekitUrl = process.env.LIVEKIT_URL || "ws://127.0.0.1:7880";
+    let livekitUrl = process.env.LIVEKIT_URL || "ws://127.0.0.1:7880";
+
+    const hostHeader = req.headers.host;
+    if (hostHeader) {
+      const hostname = hostHeader.split(":")[0];
+      if (livekitUrl.includes("127.0.0.1") || livekitUrl.includes("localhost")) {
+        livekitUrl = `ws://${hostname}:7880`;
+      }
+    }
 
     const at = new AccessToken(apiKey, apiSecret, {
       identity,

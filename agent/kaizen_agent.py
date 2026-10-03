@@ -81,8 +81,8 @@ DEMO_PROMPT = (
 
 
 def get_realtime_model():
-    """Instantiate Google Gemini 3.1 Flash Live realtime model."""
-    model_name = os.getenv("GEMINI_LIVE_MODEL", "gemini-3.1-flash-live-preview")
+    """Instantiate Google Gemini Flash Live realtime model."""
+    model_name = os.getenv("GEMINI_LIVE_MODEL", "gemini-2.5-flash-native-audio-preview-12-2025")
     voice_name = os.getenv("GOOGLE_VOICE", "Aoede")
     logging.info(f"Connecting to Gemini Realtime: model={model_name}, voice={voice_name}")
     return google.realtime.RealtimeModel(

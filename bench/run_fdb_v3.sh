@@ -225,7 +225,12 @@ trap cleanup EXIT INT TERM
 
 # Start local livekit-server if port 7880 is not listening
 if ! curl -s http://127.0.0.1:7880/ >/dev/null 2>&1; then
-  if command -v livekit-server &>/dev/null; then
+  if [ -f "$REPO_ROOT/bin/livekit-server.exe" ]; then
+    echo "  Starting local $REPO_ROOT/bin/livekit-server.exe --dev on port 7880..."
+    "$REPO_ROOT/bin/livekit-server.exe" --dev > "$RUN_DIR/livekit_server.log" 2>&1 &
+    LK_PID=$!
+    sleep 2
+  elif command -v livekit-server &>/dev/null; then
     echo "  Starting local livekit-server --dev on port 7880..."
     livekit-server --dev > "$RUN_DIR/livekit_server.log" 2>&1 &
     LK_PID=$!
@@ -238,7 +243,7 @@ fi
 # Start KAIZEN Agent
 echo "  Starting KAIZEN LiveKit Voice Agent (mode=benchmark)..."
 export KAIZEN_MODE="benchmark"
-python "$REPO_ROOT/agent/kaizen_agent.py" start --latency "$LATENCY_PROFILE" > "$RUN_DIR/agent.log" 2>&1 &
+uv run --project "$REPO_ROOT/agent" python "$REPO_ROOT/agent/kaizen_agent.py" start --latency "$LATENCY_PROFILE" > "$RUN_DIR/agent.log" 2>&1 &
 AGENT_PID=$!
 sleep 2
 

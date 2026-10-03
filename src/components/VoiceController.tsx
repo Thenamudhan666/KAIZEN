@@ -183,8 +183,23 @@ export const VoiceController: React.FC<VoiceControllerProps> = ({
           }
         });
 
-        // Step 3: Connect to LiveKit WebRTC Server
-        await room.connect(url, token);
+        // Step 3: Connect to LiveKit WebRTC Server (with dynamic client hostname alignment)
+        let connectUrl = url;
+        if (typeof window !== 'undefined' && window.location) {
+          try {
+            const parsed = new URL(url);
+            if (
+              (parsed.hostname === '127.0.0.1' || parsed.hostname === 'localhost') &&
+              window.location.hostname
+            ) {
+              parsed.hostname = window.location.hostname;
+              connectUrl = parsed.toString();
+            }
+          } catch (e) {
+            console.warn('URL normalization warning:', e);
+          }
+        }
+        await room.connect(connectUrl, token);
 
         // Step 4: Publish Local Microphone Track
         await room.localParticipant.setMicrophoneEnabled(true);
