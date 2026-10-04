@@ -4,18 +4,21 @@ import { Hero } from './Hero';
 import { WakeSequence } from './WakeSequence';
 import { ScrollTransition } from './ScrollTransition';
 import { Capabilities } from './Capabilities';
+import { KnoxSecuritySection } from './KnoxSecuritySection';
 import { ComparisonSection } from './ComparisonSection';
 import { ArchitecturePreview } from './ArchitecturePreview';
 import { FinalCTA } from './FinalCTA';
 import { Footer } from './Footer';
+import { QuickScenarioLauncher } from '../QuickScenarioLauncher';
 import { useSmoothScroll, useLenis } from '../SmoothScroll';
 import { CinematicIntro } from '../CinematicIntro';
 
 interface LandingPageProps {
   onEnterDashboard?: () => void;
+  onLaunchScenario?: (scenarioKey: 'leetcode' | 'flawed_arch' | 'research_build' | 'morning_brief') => void;
 }
 
-export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDashboard }) => {
+export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDashboard, onLaunchScenario }) => {
   const [showIntro, setShowIntro] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
       const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -71,7 +74,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDashboard }) =>
 
   // Track active section on scroll
   const checkActiveSection = (scrollPos: number) => {
-    const sections = ['hero', 'capabilities', 'architecture', 'experience'];
+    const sections = ['hero', 'scenarios', 'capabilities', 'knox', 'architecture', 'compare', 'experience'];
     const targetPos = scrollPos + 220;
 
     for (const sectionId of sections) {
@@ -100,15 +103,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDashboard }) =>
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#0b0c0e] text-[#f8fafc] relative selection:bg-amber-500/30 selection:text-amber-200 font-sans overflow-x-hidden">
+    <div className="min-h-screen bg-[#0b0c0e] text-[#f8fafc] relative selection:bg-blue-500/30 selection:text-blue-200 font-samsung overflow-x-hidden">
       {/* Global Cyber Mesh Grid Background */}
-      <div className="fixed inset-0 pointer-events-none cyber-grid opacity-40 z-0" />
+      <div className="fixed inset-0 pointer-events-none cyber-grid opacity-30 z-0" />
 
       {/* Ambient background soft glow orbs */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10">
-        <div className="absolute top-0 left-1/4 w-[650px] h-[650px] bg-gradient-to-br from-amber-500/10 via-amber-700/10 to-transparent rounded-full blur-[160px]" />
-        <div className="absolute top-1/2 right-0 w-[600px] h-[600px] bg-gradient-to-bl from-amber-600/10 via-amber-800/10 to-transparent rounded-full blur-[170px]" />
-        <div className="absolute bottom-0 left-1/3 w-[700px] h-[700px] bg-gradient-to-t from-amber-700/10 via-transparent to-transparent rounded-full blur-[180px]" />
+        <div className="absolute top-0 left-1/4 w-[750px] h-[750px] bg-gradient-to-br from-blue-600/10 via-purple-700/10 to-transparent rounded-full blur-[170px]" />
+        <div className="absolute top-1/2 right-0 w-[650px] h-[650px] bg-gradient-to-bl from-indigo-600/10 via-blue-800/10 to-transparent rounded-full blur-[180px]" />
+        <div className="absolute bottom-0 left-1/3 w-[700px] h-[700px] bg-gradient-to-t from-purple-700/10 via-transparent to-transparent rounded-full blur-[180px]" />
       </div>
 
       {/* Floating Header */}
@@ -126,19 +129,42 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDashboard }) =>
           onReplayIntro={handleReplayIntro}
         />
 
-        {/* 2. Scroll Transition */}
+        {/* 2. Live Phase Demonstration Scenarios - Fully Visible & Sized */}
+        <section id="scenarios" className="py-10 px-4 sm:px-8 max-w-7xl mx-auto select-none">
+          <QuickScenarioLauncher 
+            onLaunchScenario={(scenarioKey) => {
+              if (onLaunchScenario) {
+                onLaunchScenario(scenarioKey);
+              } else if (onEnterDashboard) {
+                onEnterDashboard();
+              }
+            }}
+            onRunAllPhases={() => {
+              if (onLaunchScenario) {
+                onLaunchScenario('leetcode');
+              } else if (onEnterDashboard) {
+                onEnterDashboard();
+              }
+            }}
+          />
+        </section>
+
+        {/* 3. Scroll Transition */}
         <ScrollTransition />
 
-        {/* 3. Capabilities Section ("ONE SYSTEM. MULTIPLE INTELLIGENCES.") */}
+        {/* 4. Capabilities Section ("GALAXY AI CORE SUITE") */}
         <Capabilities />
 
-        {/* 4. Comparison Section ("NOT JUST A CHATBOT.") */}
+        {/* 4. Samsung Knox Security Section */}
+        <KnoxSecuritySection />
+
+        {/* 5. Comparison Section ("WHY GALAXY KAIZEN?") */}
         <ComparisonSection />
 
-        {/* 5. Architecture Preview ("INSIDE KAIZEN") */}
+        {/* 6. Architecture Preview */}
         <ArchitecturePreview />
 
-        {/* 6. Final CTA ("MORE THAN AN ASSISTANT.") */}
+        {/* 7. Final CTA ("EXPERIENCE GALAXY KAIZEN") */}
         <FinalCTA onEnter={handleWakeTrigger} />
       </main>
 

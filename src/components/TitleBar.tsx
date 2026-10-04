@@ -1,5 +1,6 @@
 import React from 'react';
-import { Minus, Square, X, Cpu } from 'lucide-react';
+import { Minus, Square, X, ShieldCheck } from 'lucide-react';
+import { GalaxyAIIcon } from './GalaxyAIIcon';
 
 declare global {
   interface Window {
@@ -24,58 +25,63 @@ export const TitleBar: React.FC<TitleBarProps> = ({ isConnected = false }) => {
 
   return (
     <div
-      className="h-10 flex items-center justify-between glass-panel border-b border-amber-500/20 select-none shrink-0 px-3 z-50 shadow-[0_4px_20px_rgba(0,0,0,0.4)]"
+      className="h-10 flex items-center justify-between bg-[#08090d]/95 backdrop-blur-2xl border-b border-white/[0.08] select-none shrink-0 px-3 z-50 shadow-[0_4px_20px_rgba(0,0,0,0.6)] font-samsung"
       style={{ WebkitAppRegion: 'drag' } as React.CSSProperties}
     >
-      {/* Left: App identity */}
-      <div className="flex items-center gap-2" style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}>
-        <div className="w-6 h-6 rounded-md brand-gradient flex items-center justify-center shadow-[0_0_10px_rgba(245,158,11,0.5)]">
-          <Cpu className="w-3.5 h-3.5 text-slate-950 font-bold" />
+      {/* Left: Samsung Galaxy AI Identity */}
+      <div className="flex items-center gap-2.5" style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}>
+        <span className="font-samsung-display font-extrabold tracking-[0.16em] text-xs text-white">
+          SAMSUNG
+        </span>
+        <span className="h-3 w-[1px] bg-slate-700" />
+        <div className="flex items-center gap-1.5">
+          <span className="font-samsung font-bold tracking-tight text-xs galaxy-ai-text">
+            Galaxy KAIZEN
+          </span>
+          <GalaxyAIIcon size={13} />
         </div>
-        <span className="font-display font-bold tracking-tight text-sm bg-clip-text text-transparent bg-gradient-to-r from-white via-amber-100 to-amber-300">
-          KAIZEN
-        </span>
-        <span className="font-mono text-[9px] tracking-widest uppercase text-amber-200 px-2 py-0.5 rounded-full bg-amber-500/15 border border-amber-400/30 font-semibold">
-          SOCRATIC HUD
-        </span>
+        <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-950/40 border border-emerald-500/30 text-[9px] text-emerald-300 font-mono font-medium">
+          <ShieldCheck className="w-2.5 h-2.5 text-emerald-400" />
+          <span>Knox Vault</span>
+        </div>
       </div>
 
       {/* Center: Connection status */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.03] border border-white/[0.06]">
         <div
           className={`w-2 h-2 rounded-full ${
             isConnected
-              ? 'bg-amber-400 shadow-[0_0_8px_rgba(245,158,11,0.9)] animate-pulse'
+              ? 'bg-blue-400 shadow-[0_0_8px_rgba(96,165,250,0.9)] animate-pulse'
               : 'bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.9)]'
           }`}
         />
-        <span className="font-mono text-[10px] text-slate-400 font-medium">
-          {isConnected ? 'CORE OPERATIONAL' : 'STANDBY'}
+        <span className="font-samsung text-[10px] text-slate-300 font-semibold tracking-wide">
+          {isConnected ? 'GALAXY AI CONNECTED' : 'OFFLINE'}
         </span>
       </div>
 
       {/* Right: Window controls */}
       <div
-        className="flex items-center h-full text-slate-400"
+        className="flex items-center h-full text-slate-400 gap-1"
         style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
       >
         <button
           onClick={() => window.electronAPI?.minimize()}
-          className="h-full px-3 flex items-center justify-center hover:bg-white/[0.08] hover:text-white transition-colors"
+          className="h-7 w-8 rounded-lg flex items-center justify-center hover:bg-white/[0.08] hover:text-white transition-colors"
           title="Minimize"
         >
           <Minus className="w-3.5 h-3.5" />
         </button>
         <button
           onClick={() => window.electronAPI?.maximize()}
-          className="h-full px-3 flex items-center justify-center hover:bg-white/[0.08] hover:text-white transition-colors"
+          className="h-7 w-8 rounded-lg flex items-center justify-center hover:bg-white/[0.08] hover:text-white transition-colors"
           title="Maximize"
         >
-          <Square className="w-3 h-3" />
+          <Square className="w-2.5 h-2.5" />
         </button>
         <button
           onClick={() => window.electronAPI?.close()}
-          className="h-full px-3 flex items-center justify-center hover:bg-rose-600/30 hover:text-rose-300 transition-colors"
+          className="h-7 w-8 rounded-lg flex items-center justify-center hover:bg-rose-600/40 hover:text-rose-200 transition-colors"
           title="Close"
         >
           <X className="w-3.5 h-3.5" />

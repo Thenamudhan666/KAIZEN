@@ -1,9 +1,11 @@
 import express from "express";
+import http from "http";
 import path from "path";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI, Type } from "@google/genai";
 import dotenv from "dotenv";
 import { AccessToken } from "livekit-server-sdk";
+import { WebSocketServer, WebSocket } from "ws";
 
 dotenv.config();
 
@@ -11,6 +13,17 @@ const app = express();
 const PORT = 3000;
 
 app.use(express.json({ limit: "10mb" }));
+
+// Enable CORS for all local development origins (5173, 3000, 127.0.0.1, Electron)
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200);
+  }
+  next();
+});
 
 // Lazy Gemini Client with throttled environment refresh
 let aiClient: GoogleGenAI | null = null;
@@ -46,6 +59,7 @@ function getGemini(): GoogleGenAI | null {
 const CANDIDATE_MODELS = [
   "gemini-3.5-flash-lite",    // ~1070ms - ultra-fast & lightweight
   "gemini-flash-lite-latest", // ~1100ms - high speed fallback
+  "gemini-3.8-flash",         // Gemini 3.8 Flash (High)
   "gemini-3.1-flash-lite",    // ~1220ms - reliable low-latency
   "gemini-3.5-flash",         // ~1880ms - standard flash
   "gemini-3.6-flash",         // ~2100ms - extended flash
@@ -767,6 +781,49 @@ export function solveIntervalPartition(arr: number[]): number {
   }
 });
 
+// API: Direct Neural Voice Transcription via Gemini (Zero-Network-Error Audio Ingestion)
+app.post("/api/voice/transcribe", async (req, res) => {
+  try {
+    const ai = getGemini();
+    if (!ai) {
+      return res.status(500).json({ error: "Gemini API key not configured." });
+    }
+
+    const { audioData, mimeType = "audio/webm" } = req.body;
+    if (!audioData) {
+      return res.status(400).json({ error: "Missing audioData base64 payload." });
+    }
+
+    const { response, model: usedModel } = await generateWithFallback(ai, {
+      contents: [
+        {
+          role: "user",
+          parts: [
+            {
+              inlineData: {
+                mimeType,
+                data: audioData,
+              },
+            },
+            {
+              text: "Listen carefully to this user voice audio. Provide an exact transcription of what was spoken in English. If the audio is silent or unintelligible noise, reply with [SILENCE]. Output ONLY the transcription text with no additional quotes, notes, or explanations.",
+            },
+          ],
+        },
+      ],
+    });
+
+    const transcript = (response.text || "").trim();
+    res.json({
+      transcript: transcript === "[SILENCE]" ? "" : transcript,
+      model: usedModel,
+    });
+  } catch (err: any) {
+    console.error("[KAIZEN Voice Transcription Error]:", err);
+    res.status(500).json({ error: err.message || "Failed to transcribe audio." });
+  }
+});
+
 // API: LiveKit Token Dispatcher for WebRTC Voice Agent
 app.get("/api/livekit/token", async (req, res) => {
   try {
@@ -826,10 +883,92 @@ async function start() {
     });
   }
 
-  app.listen(PORT, "0.0.0.0", () => {
+  const server = http.createServer(app);
+
+  // WebSocket Endpoint for Low-Latency 16kHz PCM Bidirectional Audio Streaming & Native VAD
+  const wss = new WebSocketServer({ server, path: "/ws/audio" });
+
+  wss.on("error", (err) => {
+    console.warn("[KAIZEN Audio Stream WSS Error]:", err?.message);
+  });
+
+  wss.on("connection", (ws: WebSocket) => {
+    console.log("[KAIZEN Audio Stream] Client connected for audio/pcm;rate=16000 streaming");
+    let isClientSpeaking = false;
+    let vadSilenceTimeout: NodeJS.Timeout | null = null;
+
+    ws.on("message", (data: any, isBinary: boolean) => {
+      try {
+        if (isBinary && Buffer.isBuffer(data)) {
+          // Safely slice a clean ArrayBuffer to guarantee proper 2-byte alignment for Int16Array
+          const sampleCount = Math.floor(data.byteLength / 2);
+          const alignedBuffer = data.buffer.slice(data.byteOffset, data.byteOffset + sampleCount * 2);
+          const int16Array = new Int16Array(alignedBuffer);
+          let sumSquares = 0;
+          for (let i = 0; i < sampleCount; i++) {
+            const norm = int16Array[i] / 32768.0;
+            sumSquares += norm * norm;
+          }
+          const rms = Math.sqrt(sumSquares / (sampleCount || 1));
+          const isVoiceDetected = rms > 0.035;
+
+          // Feedback real-time VAD energy
+          if (ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({ type: "vad", energy: rms, active: isVoiceDetected }));
+          }
+
+          // Native VAD & Mid-sentence Barge-in Trigger
+          if (isVoiceDetected) {
+            if (!isClientSpeaking) {
+              isClientSpeaking = true;
+              if (ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({
+                  type: "barge_in",
+                  reason: "Native VAD: User voice activity detected mid-sentence. Model voice interrupted immediately.",
+                  timestamp: Date.now(),
+                }));
+              }
+            }
+            if (vadSilenceTimeout) {
+              clearTimeout(vadSilenceTimeout);
+              vadSilenceTimeout = null;
+            }
+          } else if (isClientSpeaking) {
+            if (!vadSilenceTimeout) {
+              vadSilenceTimeout = setTimeout(() => {
+                isClientSpeaking = false;
+                vadSilenceTimeout = null;
+              }, 1200);
+            }
+          }
+        }
+      } catch (err: any) {
+        console.warn("[WS Message Handling Error]:", err?.message);
+      }
+    });
+
+    ws.on("error", (err) => {
+      console.warn("[KAIZEN Audio Stream WS Error]:", err?.message);
+    });
+
+    ws.on("close", () => {
+      if (vadSilenceTimeout) clearTimeout(vadSilenceTimeout);
+    });
+  });
+
+  server.listen(PORT, "0.0.0.0", () => {
     console.log(`[KAIZEN Partner Core] Server listening on http://0.0.0.0:${PORT}`);
     console.log(`[KAIZEN Architecture] LiveKit Token Endpoint: http://localhost:${PORT}/api/livekit/token`);
+    console.log(`[KAIZEN Architecture] 16kHz PCM Bidirectional WebSocket: ws://localhost:${PORT}/ws/audio`);
   });
 }
+
+// Global Process Crash Guards
+process.on("uncaughtException", (err) => {
+  console.error("[KAIZEN Server] Uncaught Exception:", err);
+});
+process.on("unhandledRejection", (reason) => {
+  console.error("[KAIZEN Server] Unhandled Rejection:", reason);
+});
 
 start();

@@ -101,7 +101,6 @@ function createWindow() {
     minWidth: 900,
     minHeight: 600,
     frame: false,
-    titleBarStyle: 'hidden',
     backgroundColor: '#050505',
     icon: path.join(__dirname, 'assets', 'icon.png'),
     webPreferences: {
@@ -110,16 +109,44 @@ function createWindow() {
       nodeIntegration: false,
       sandbox: false,
     },
-    show: false,
+    show: true,
   });
+
+  mainWindow.center();
+  mainWindow.show();
+  mainWindow.focus();
+  mainWindow.setAlwaysOnTop(true);
+  mainWindow.setAlwaysOnTop(false);
 
   // Load the app from the local Express server
   mainWindow.loadURL(`http://localhost:${SERVER_PORT}`);
 
-  // Show window when ready to prevent visual flash
+  mainWindow.webContents.on('did-finish-load', () => {
+    console.log(`[Electron] Cockpit loaded successfully: http://localhost:${SERVER_PORT}`);
+  });
+
   mainWindow.once('ready-to-show', () => {
-    mainWindow.show();
-    mainWindow.focus();
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.show();
+      mainWindow.focus();
+    }
+  });
+
+  // Fallback: Ensure window is shown and brought to front
+  setTimeout(() => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.show();
+      mainWindow.focus();
+    }
+  }, 1000);
+
+  mainWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription, validatedURL) => {
+    console.error(`[Electron] Failed to load ${validatedURL}: ${errorDescription} (${errorCode})`);
+    setTimeout(() => {
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.loadURL(`http://localhost:${SERVER_PORT}`);
+      }
+    }, 1500);
   });
 
   mainWindow.on('closed', () => {

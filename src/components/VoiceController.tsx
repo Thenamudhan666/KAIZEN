@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Mic, MicOff, Volume2, VolumeX, ShieldAlert, Zap, Radio } from 'lucide-react';
 import { Room, RoomEvent, Track, RemoteTrack, RemoteParticipant } from 'livekit-client';
 import { VoicePipelineMetrics, AgentCognitiveState } from '../types';
+import { speakKaizenVoice, stopKaizenVoice } from '../utils/speechSynthesis';
 
 interface VoiceControllerProps {
   onSpeechInput: (text: string) => void;
@@ -12,6 +13,9 @@ interface VoiceControllerProps {
   onStateChange: (state: AgentCognitiveState) => void;
   onSocraticUpdate?: (data: any) => void;
   onVoyagerUpdate?: (data: any) => void;
+  speechSynthesisEnabled?: boolean;
+  onToggleSpeechSynthesis?: () => void;
+  onTestVoice?: () => void;
 }
 
 export const VoiceController: React.FC<VoiceControllerProps> = ({
@@ -23,6 +27,9 @@ export const VoiceController: React.FC<VoiceControllerProps> = ({
   onStateChange,
   onSocraticUpdate,
   onVoyagerUpdate,
+  speechSynthesisEnabled,
+  onToggleSpeechSynthesis,
+  onTestVoice,
 }) => {
   const [isListening, setIsListening] = useState(false);
   const [micVolume, setMicVolume] = useState(0.2);
@@ -30,7 +37,8 @@ export const VoiceController: React.FC<VoiceControllerProps> = ({
   const [eouConfidence] = useState(0.92);
   const [interruptionCount, setInterruptionCount] = useState(0);
   const [lastReconciliation, setLastReconciliation] = useState<string | null>(null);
-  const [speechSynthesisEnabled, setSpeechSynthesisEnabled] = useState(true);
+  const [internalSpeechEnabled, setInternalSpeechEnabled] = useState(true);
+  const isSpeechEnabled = speechSynthesisEnabled ?? internalSpeechEnabled;
   const [livekitStatus, setLivekitStatus] = useState<'disconnected' | 'connecting' | 'connected' | 'error'>('disconnected');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -38,13 +46,17 @@ export const VoiceController: React.FC<VoiceControllerProps> = ({
   const audioElementsRef = useRef<HTMLAudioElement[]>([]);
   const audioCtxRef = useRef<AudioContext | null>(null);
   const animFrameRef = useRef<number | null>(null);
+  const recognitionRef = useRef<any>(null);
 
   // Sync mute state to all active WebRTC audio elements
   useEffect(() => {
     audioElementsRef.current.forEach((el) => {
-      el.muted = !speechSynthesisEnabled;
+      el.muted = !isSpeechEnabled;
     });
-  }, [speechSynthesisEnabled]);
+    if (!isSpeechEnabled) {
+      stopKaizenVoice();
+    }
+  }, [isSpeechEnabled]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -57,6 +69,13 @@ export const VoiceController: React.FC<VoiceControllerProps> = ({
     setIsListening(false);
     setLivekitStatus('disconnected');
     onStateChange('idle');
+
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.stop();
+      } catch (_) {}
+      recognitionRef.current = null;
+    }
 
     if (roomRef.current) {
       try {
@@ -91,6 +110,9 @@ export const VoiceController: React.FC<VoiceControllerProps> = ({
   };
 
   const handleTriggerBargeIn = (reason: string = 'User barge-in') => {
+    // 0. Immediately cancel Butler Speech Synthesis
+    stopKaizenVoice();
+
     // 1. Mute/Pause active audio playback elements
     audioElementsRef.current.forEach((el) => {
       try {
@@ -115,6 +137,99 @@ export const VoiceController: React.FC<VoiceControllerProps> = ({
 
     // 4. Update parent
     onBargeIn();
+  };
+
+  const startBrowserVoiceRecognition = async () => {
+    const SpeechRec = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRec) {
+      setLivekitStatus('error');
+      setErrorMessage('Speech Recognition is not supported in this browser. Please use Chrome, Edge, or Electron.');
+      return;
+    }
+
+    try {
+      setLivekitStatus('connected');
+      setIsListening(true);
+      onStateChange('listening');
+      setErrorMessage(null);
+
+      // Start Web Audio visualizer for mic energy meter
+      try {
+        const micStream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true,
+          },
+        });
+        const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+        audioCtxRef.current = audioCtx;
+        const source = audioCtx.createMediaStreamSource(micStream);
+        const analyser = audioCtx.createAnalyser();
+        analyser.fftSize = 256;
+        source.connect(analyser);
+
+        const bufferLength = analyser.frequencyBinCount;
+        const dataArray = new Uint8Array(bufferLength);
+
+        const updateVolume = () => {
+          analyser.getByteFrequencyData(dataArray);
+          let sum = 0;
+          for (let i = 0; i < bufferLength; i++) sum += dataArray[i];
+          const vol = sum / bufferLength / 255;
+          setMicVolume(vol);
+          animFrameRef.current = requestAnimationFrame(updateVolume);
+        };
+        updateVolume();
+      } catch (micVisualizerErr) {
+        console.warn('[KAIZEN] Visualizer notice:', micVisualizerErr);
+      }
+
+      const rec = new SpeechRec();
+      recognitionRef.current = rec;
+      rec.continuous = true;
+      rec.interimResults = false;
+      rec.lang = 'en-US';
+
+      rec.onstart = () => {
+        setIsListening(true);
+        onStateChange('listening');
+      };
+
+      rec.onresult = (event: any) => {
+        let finalTranscript = '';
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          if (event.results[i].isFinal) {
+            finalTranscript += event.results[i][0].transcript;
+          }
+        }
+        if (finalTranscript.trim()) {
+          console.log('[KAIZEN Local Voice] Transcribed speech:', finalTranscript);
+          onSpeechInput(finalTranscript.trim());
+        }
+      };
+
+      rec.onerror = (event: any) => {
+        if (event.error !== 'no-speech') {
+          console.warn('[KAIZEN Speech Recognition] Error:', event.error);
+        }
+      };
+
+      rec.onend = () => {
+        if (isListening && recognitionRef.current) {
+          try {
+            recognitionRef.current.start();
+          } catch (_) {}
+        }
+      };
+
+      rec.start();
+    } catch (e: any) {
+      console.error('[KAIZEN Local Voice] Failed to start:', e);
+      setLivekitStatus('error');
+      setErrorMessage(e.message || 'Microphone access denied.');
+      stopSession();
+    }
   };
 
   const toggleListening = async () => {
@@ -153,12 +268,16 @@ export const VoiceController: React.FC<VoiceControllerProps> = ({
           stopSession();
         });
 
-        // Remote Agent Audio Track Subscription
+        // Remote Agent Audio Track Subscription with proper DOM attachment & playback
         room.on(RoomEvent.TrackSubscribed, (track: RemoteTrack, _, participant: RemoteParticipant) => {
           if (track.kind === Track.Kind.Audio) {
             console.log(`[KAIZEN] Subscribed to agent audio track from ${participant.identity}`);
             const element = track.attach();
-            element.muted = !speechSynthesisEnabled;
+            element.muted = !isSpeechEnabled;
+            element.autoplay = true;
+            element.style.display = 'none';
+            document.body.appendChild(element);
+            element.play().catch((playErr) => console.warn('[KAIZEN] WebRTC audio autoplay notice:', playErr));
             audioElementsRef.current.push(element);
           }
         });
@@ -255,12 +374,8 @@ export const VoiceController: React.FC<VoiceControllerProps> = ({
           console.warn('Microphone visualizer initialization notice:', micErr);
         }
       } catch (err: any) {
-        console.error('[KAIZEN] LiveKit Connection error:', err);
-        setLivekitStatus('error');
-        setErrorMessage(
-          err.message || 'LiveKit Agent connection failed. Ensure livekit-server and KAIZEN agent are running.'
-        );
-        stopSession();
+        console.warn('[KAIZEN] LiveKit daemon not reachable, switching to Local Voice Gateway:', err);
+        startBrowserVoiceRecognition();
       }
     }
   };
@@ -277,6 +392,8 @@ export const VoiceController: React.FC<VoiceControllerProps> = ({
     interruptionCount,
     lastReconciledContext: lastReconciliation || undefined,
   };
+
+  const toggleSpeech = onToggleSpeechSynthesis ?? (() => setInternalSpeechEnabled((prev) => !prev));
 
   return (
     <div
@@ -300,22 +417,47 @@ export const VoiceController: React.FC<VoiceControllerProps> = ({
 
         {/* Global Controls */}
         <div className="flex items-center gap-2">
+          {/* Audio Output Mute/Unmute */}
           <button
             id="toggle-tts-audio-btn"
-            onClick={() => setSpeechSynthesisEnabled(!speechSynthesisEnabled)}
+            onClick={toggleSpeech}
             className={`px-3 py-1.5 rounded-xl border text-xs font-mono transition-all flex items-center gap-1.5 cursor-pointer ${
-              speechSynthesisEnabled
+              isSpeechEnabled
                 ? 'bg-amber-500/20 border-amber-400/40 text-amber-200'
                 : 'bg-black/30 border-white/10 text-slate-400'
             }`}
             title="Toggle Agent Audio"
           >
-            {speechSynthesisEnabled ? (
+            {isSpeechEnabled ? (
               <Volume2 className="w-4 h-4 text-amber-400" />
             ) : (
               <VolumeX className="w-4 h-4 text-slate-400" />
             )}
-            <span className="hidden sm:inline">{speechSynthesisEnabled ? 'AUDIO ON' : 'MUTED'}</span>
+            <span className="hidden sm:inline">{isSpeechEnabled ? 'AUDIO ON' : 'MUTED'}</span>
+          </button>
+
+          {/* Test Voice Button */}
+          <button
+            id="test-voice-btn"
+            type="button"
+            onClick={() => {
+              if (onTestVoice) {
+                onTestVoice();
+              } else {
+                speakKaizenVoice(
+                  "Good day, sir. All core subsystems and audio drivers are fully operational. How may I be of service?",
+                  {
+                    onStart: () => onStateChange('speaking'),
+                    onEnd: () => onStateChange('idle'),
+                  }
+                );
+              }
+            }}
+            className="px-2.5 py-1.5 rounded-xl border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 text-xs font-mono font-semibold transition-all flex items-center gap-1.5 cursor-pointer shadow-sm active:scale-95"
+            title="Test KAIZEN British Butler Voice Output"
+          >
+            <Volume2 className="w-3.5 h-3.5 text-amber-400" />
+            <span>TEST VOICE</span>
           </button>
 
           <button
@@ -330,7 +472,7 @@ export const VoiceController: React.FC<VoiceControllerProps> = ({
             {isListening ? (
               <>
                 <Mic className="w-4 h-4 text-amber-400 animate-pulse" />
-                <span>LIVEKIT ACTIVE</span>
+                <span>VOICE ACTIVE</span>
               </>
             ) : (
               <>
@@ -342,7 +484,7 @@ export const VoiceController: React.FC<VoiceControllerProps> = ({
         </div>
       </div>
 
-      {/* LiveKit Connection Status Bar */}
+      {/* LiveKit / Voice Gateway Connection Status Bar */}
       <div className="mt-3 flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#151922] border border-amber-500/15 text-[10px] font-mono">
         <div
           className={`w-2 h-2 rounded-full ${
@@ -367,19 +509,19 @@ export const VoiceController: React.FC<VoiceControllerProps> = ({
           }
         >
           {livekitStatus === 'connected'
-            ? 'LIVEKIT WEBRTC CONNECTED • AGENT RUNTIME: PYTHON LIVEKIT-AGENTS 1.3'
+            ? (roomRef.current ? 'LIVEKIT WEBRTC CONNECTED • AGENT RUNTIME: PYTHON LIVEKIT-AGENTS 1.3' : 'LOCAL VOICE GATEWAY ACTIVE • MIC RECOGNITION + BUTLER AUDIO SYNTHESIS')
             : livekitStatus === 'connecting'
-            ? 'CONNECTING TO LIVEKIT SERVER & AGENT...'
+            ? 'CONNECTING TO VOICE GATEWAY...'
             : livekitStatus === 'error'
-            ? 'LIVEKIT CONNECTION ERROR'
-            : 'LIVEKIT AGENT STANDBY (READY FOR WEBRTC SESSION)'}
+            ? 'VOICE GATEWAY STANDBY'
+            : 'VOICE AGENT STANDBY (READY FOR WEBRTC OR LOCAL MIC SESSION)'}
         </span>
       </div>
 
       {errorMessage && (
         <div className="mt-2 p-3 rounded-xl bg-rose-950/40 border border-rose-500/30 text-[11px] font-mono text-rose-300">
           <span className="font-bold">⚠ </span>
-          {errorMessage}
+          <span>{errorMessage}</span>
         </div>
       )}
 

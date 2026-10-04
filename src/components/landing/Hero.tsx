@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { AICore } from './AICore';
 import { SystemStatus } from './SystemStatus';
-import { ArrowDown, Play, Sparkles, Activity, ShieldCheck, Database, Zap } from 'lucide-react';
+import { ArrowRight, ChevronDown, Play, Sparkles, Shield, Cpu, Zap, Radio, Check } from 'lucide-react';
 import { useSmoothScroll } from '../SmoothScroll';
+import { GalaxyAIIcon } from '../GalaxyAIIcon';
+import { KnoxVaultBadge } from '../KnoxVaultBadge';
 
 interface HeroProps {
   onWake: () => void;
@@ -12,127 +14,186 @@ interface HeroProps {
 
 export const Hero: React.FC<HeroProps> = ({ onWake, coreState = 'idle', onReplayIntro }) => {
   const { scrollToSection } = useSmoothScroll();
+  const [selectedFinish, setSelectedFinish] = useState<'black' | 'gray' | 'violet' | 'gold'>('violet');
 
   const scrollToCapabilities = () => {
     scrollToSection('capabilities', { offset: -60, duration: 1.2 });
   };
 
+  // Samsung Galaxy Titanium Finishes
+  const finishes = [
+    { id: 'violet', name: 'Titanium Violet', color: '#6366f1', glow: 'rgba(99, 102, 241, 0.4)', bg: '#312e81' },
+    { id: 'gray', name: 'Titanium Gray', color: '#94a3b8', glow: 'rgba(148, 163, 184, 0.4)', bg: '#334155' },
+    { id: 'black', name: 'Titanium Black', color: '#1e293b', glow: 'rgba(30, 41, 59, 0.5)', bg: '#0f172a' },
+    { id: 'gold', name: 'Titanium Amber', color: '#f59e0b', glow: 'rgba(245, 158, 11, 0.4)', bg: '#78350f' },
+  ] as const;
+
+  const currentFinish = finishes.find((f) => f.id === selectedFinish) || finishes[0];
+
   return (
     <section 
       id="hero" 
-      className="relative min-h-screen flex flex-col justify-center pt-24 pb-16 px-4 sm:px-8 max-w-7xl mx-auto overflow-hidden select-none"
+      className="relative min-h-screen flex flex-col justify-center pt-28 pb-16 px-4 sm:px-8 max-w-7xl mx-auto overflow-hidden select-none font-samsung"
     >
-      {/* Background ambient radial gradients & fine grid */}
-      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-br from-amber-500/10 via-amber-700/10 to-transparent rounded-full blur-[140px] pointer-events-none -z-10" />
+      {/* Dynamic Ambient Glow matching selected Samsung Titanium finish */}
+      <div 
+        className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[850px] h-[850px] rounded-full blur-[160px] pointer-events-none -z-10 transition-all duration-700 opacity-25"
+        style={{ background: currentFinish.color }}
+      />
 
-      {/* Hero Micro-Telemetry Top Ribbon */}
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-8 pb-3 border-b border-white/[0.08] font-mono text-[10px] sm:text-[11px] text-slate-400">
+      {/* Samsung Top Spec Ribbon */}
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-8 pb-3 border-b border-white/[0.08] text-xs text-slate-400">
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shadow-[0_0_6px_rgba(245,158,11,0.9)] animate-pulse" />
-            <span className="text-slate-400">LOCAL LATENCY:</span>
-            <span className="font-bold text-white">42 ms</span>
+            <span className="w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.9)] animate-pulse" />
+            <span className="text-slate-400 font-medium">REALTIME LATENCY:</span>
+            <span className="font-bold text-white tracking-wide">&lt; 800 ms TTFT</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-500/80 shadow-[0_0_6px_rgba(245,158,11,0.6)]" />
-            <span className="text-slate-400">MEMORY:</span>
-            <span className="font-bold text-white">1.24 GB</span>
+            <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
+            <span className="text-slate-400 font-medium">KNOX VAULT:</span>
+            <span className="font-bold text-emerald-400">HARDWARE ISOLATED</span>
           </div>
         </div>
 
-        <div className="flex items-center gap-6">
-          <div className="flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shadow-[0_0_6px_rgba(245,158,11,0.8)]" />
-            <span className="text-slate-400">CONTEXT:</span>
-            <span className="font-bold text-amber-400">ACTIVE</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-            <span className="text-slate-400">COGNITIVE STATE:</span>
-            <span className="font-bold text-amber-300">READY</span>
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-white/[0.05] border border-white/[0.08] text-[11px]">
+            <GalaxyAIIcon size={13} />
+            <span className="text-slate-300 font-semibold">Galaxy AI Engine</span>
+            <span className="text-blue-400 font-bold">Active</span>
           </div>
         </div>
       </div>
 
       {/* Main Hero Split Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center flex-1">
-        {/* Left Column: Typography & CTAs */}
+        {/* Left Column: Samsung Product Storytelling & CTA */}
         <div className="lg:col-span-6 flex flex-col z-20">
-          {/* Autonomous Substrate Tag */}
-          <div className="mb-2">
-            <span className="inline-block px-3 py-1 rounded-full bg-amber-500/10 border border-amber-400/30 text-amber-300 text-[10px] font-mono tracking-[0.25em] font-bold uppercase mb-4 shadow-[0_0_15px_rgba(245,158,11,0.2)]">
-              AUTONOMOUS AI OPERATING SYSTEM
-            </span>
-            <h1 className="font-orbitron font-black text-5xl sm:text-7xl lg:text-8xl tracking-tight text-white leading-none">
-              <span className="text-gradient-amber">KAIZEN</span>
+          {/* Samsung Flagship Pill Badge */}
+          <div className="mb-3">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full galaxy-ai-badge mb-4">
+              <GalaxyAIIcon size={15} />
+              <span className="font-samsung font-bold text-xs tracking-wide text-white">
+                Galaxy AI is here
+              </span>
+              <span className="text-blue-200/50 text-xs">|</span>
+              <span className="text-[11px] text-blue-200 font-medium tracking-tight">
+                Samsung Flagship Edition
+              </span>
+            </div>
+
+            {/* Samsung Main Product Title */}
+            <h1 className="font-samsung-display font-black text-5xl sm:text-7xl lg:text-8xl tracking-tight text-white leading-[0.95]">
+              Galaxy <span className="galaxy-ai-text">KAIZEN</span>
             </h1>
           </div>
 
-          {/* Iconic Stacked Story Mantra: THINK. LEARN. ACT. IMPROVE. */}
-          <div className="my-5 flex flex-col space-y-1 sm:space-y-1.5 font-orbitron font-extrabold text-xl sm:text-2xl lg:text-3xl tracking-[0.22em] text-slate-200">
-            <div className="flex items-center gap-2.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-400/70" />
-              <span className="hover:text-amber-400 transition-colors">THINK.</span>
+          {/* Samsung Subtitle */}
+          <h2 className="text-xl sm:text-2xl lg:text-3xl font-samsung font-semibold tracking-tight text-slate-200 my-4 leading-snug">
+            Autonomous Socratic AI Partner. <br />
+            <span className="text-slate-400 font-normal">
+              Engineered for seamless reasoning, lifelong learning, and zero-compromise privacy.
+            </span>
+          </h2>
+
+          {/* Samsung S24/S25 Ultra Titanium Finish Selector */}
+          <div className="my-5 p-3.5 rounded-2xl bg-white/[0.03] border border-white/[0.08] backdrop-blur-md max-w-md">
+            <div className="flex items-center justify-between text-xs text-slate-400 mb-2.5">
+              <span className="font-medium text-slate-300">Selected Finish:</span>
+              <span className="font-bold text-white tracking-wide">{currentFinish.name}</span>
             </div>
-            <div className="flex items-center gap-2.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-400/70" />
-              <span className="hover:text-amber-300 transition-colors">LEARN.</span>
-            </div>
-            <div className="flex items-center gap-2.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-400/70" />
-              <span className="hover:text-amber-400 transition-colors">ACT.</span>
-            </div>
-            <div className="flex items-center gap-2.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-              <span className="text-gradient-ai hover:opacity-90 transition-opacity">IMPROVE.</span>
+            <div className="flex items-center gap-3">
+              {finishes.map((f) => (
+                <button
+                  key={f.id}
+                  onClick={() => setSelectedFinish(f.id)}
+                  title={f.name}
+                  className={`w-8 h-8 rounded-full flex items-center justify-center transition-all cursor-pointer relative ${
+                    selectedFinish === f.id
+                      ? 'ring-2 ring-white scale-110 shadow-lg'
+                      : 'opacity-70 hover:opacity-100 hover:scale-105'
+                  }`}
+                  style={{ backgroundColor: f.color }}
+                >
+                  {selectedFinish === f.id && (
+                    <Check className="w-3.5 h-3.5 text-white stroke-[3]" />
+                  )}
+                </button>
+              ))}
+              <span className="text-[11px] text-slate-500 font-mono ml-2">
+                Grade 5 Titanium Frame
+              </span>
             </div>
           </div>
 
-          {/* Supporting text */}
-          <p className="text-slate-300/80 text-sm sm:text-base leading-relaxed max-w-xl font-sans mb-8">
-            An intelligent cognitive system that understands context, retains high-density memory, reasons dialectically, and acts with purpose.
-          </p>
+          {/* Key Product Spec Highlights */}
+          <div className="grid grid-cols-2 gap-3 my-4 max-w-lg">
+            <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06] flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-lg bg-blue-500/15 flex items-center justify-center text-blue-400 shrink-0">
+                <Radio className="w-3.5 h-3.5" />
+              </div>
+              <div>
+                <div className="text-[11px] font-bold text-white">Full-Duplex Voice</div>
+                <div className="text-[10px] text-slate-400">Real-time Silero VAD</div>
+              </div>
+            </div>
 
-          {/* Action CTAs: [ ENTER SYSTEM ] */}
-          <div className="flex flex-wrap items-center gap-4">
+            <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06] flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-lg bg-emerald-500/15 flex items-center justify-center text-emerald-400 shrink-0">
+                <Shield className="w-3.5 h-3.5" />
+              </div>
+              <div>
+                <div className="text-[11px] font-bold text-white">Knox Vault Enclave</div>
+                <div className="text-[10px] text-slate-400">Zero Cloud Telemetry</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Samsung CTAs: [ Experience Galaxy AI ] & [ Explore Specs ] */}
+          <div className="flex flex-wrap items-center gap-4 mt-4">
             <button
               onClick={onWake}
-              className="relative px-7 py-3.5 rounded-xl bg-gradient-to-r from-amber-500 via-amber-600 to-amber-700 hover:from-amber-400 hover:to-amber-600 text-slate-950 font-mono text-sm font-black tracking-[0.15em] uppercase transition-all shadow-[0_0_30px_rgba(245,158,11,0.45)] border border-amber-300/60 flex items-center gap-3 cursor-pointer active:scale-95 group"
+              className="px-7 py-3.5 samsung-btn-primary flex items-center gap-3 text-sm cursor-pointer group shadow-xl"
             >
-              <span className="w-2.5 h-2.5 rounded-full bg-slate-950 animate-ping" />
-              <span>[ ENTER SYSTEM ]</span>
-              <Play className="w-3.5 h-3.5 fill-current ml-1 transition-transform group-hover:translate-x-1" />
+              <GalaxyAIIcon size={18} glow={false} />
+              <span className="font-samsung font-bold tracking-tight">Experience Galaxy AI</span>
+              <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
             </button>
 
             {onReplayIntro && (
               <button
                 onClick={onReplayIntro}
-                className="px-5 py-3.5 rounded-xl ai-glass-panel hover:bg-white/[0.06] text-amber-300 hover:text-white font-mono text-xs sm:text-sm font-semibold tracking-wider transition-all border border-amber-500/30 hover:border-amber-400/60 flex items-center gap-2 cursor-pointer active:scale-95"
-                title="Replay cinematic genesis intro"
+                className="px-5 py-3.5 samsung-btn-secondary text-xs sm:text-sm flex items-center gap-2 cursor-pointer"
+                title="Watch Galaxy Unpacked Keynote Intro"
               >
-                <span>REPLAY INTRO</span>
-                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                <Play className="w-3.5 h-3.5 fill-current" />
+                <span>Watch Keynote</span>
               </button>
             )}
 
             <button
               onClick={scrollToCapabilities}
-              className="px-6 py-3.5 rounded-xl ai-glass-panel hover:bg-white/[0.06] text-slate-300 hover:text-white font-mono text-xs sm:text-sm font-semibold tracking-wider transition-all border border-white/10 hover:border-amber-400/40 flex items-center gap-2 cursor-pointer active:scale-95"
+              className="px-5 py-3.5 samsung-btn-secondary text-xs sm:text-sm flex items-center gap-2 cursor-pointer"
             >
-              <span>EXPLORE SYSTEM</span>
-              <ArrowDown className="w-3.5 h-3.5 text-amber-400" />
+              <span>Explore Features</span>
+              <ChevronDown className="w-3.5 h-3.5" />
             </button>
+          </div>
+
+          {/* Samsung Disclaimer / Asterisk footnote */}
+          <div className="mt-8 text-[11px] text-slate-500 leading-relaxed font-sans border-t border-white/[0.05] pt-3">
+            * Galaxy AI features are powered locally by Gemini 3.1 Live and Samsung Knox Vault. Internet connection required for WebRTC live audio gateway. Features may vary by user environment.
           </div>
         </div>
 
         {/* Right Column: 3D Interactive AI Core & Floating System Status */}
         <div className="lg:col-span-6 relative flex items-center justify-center min-h-[460px] sm:min-h-[540px] z-10">
-          {/* 3D WebGL Three.js Particle Core */}
+          {/* 3D WebGL Three.js Particle Core with Galaxy AI Ring */}
           <div className="w-full h-[440px] sm:h-[520px] relative">
             <AICore state={coreState} />
           </div>
 
-          {/* Floating System Status Overlay */}
+          {/* Floating Samsung One UI Dynamic Now Bar */}
           <div className="absolute -bottom-4 sm:bottom-4 left-0 sm:-left-6 z-30 max-w-xs sm:max-w-sm w-full">
             <SystemStatus isAwakening={coreState === 'awakening'} />
           </div>

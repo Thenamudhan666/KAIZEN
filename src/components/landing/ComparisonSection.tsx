@@ -1,108 +1,109 @@
 import React from 'react';
-import { ArrowDown, RefreshCw, XCircle, CheckCircle2, Sparkles } from 'lucide-react';
+import { ArrowDown, RefreshCw, XCircle, CheckCircle2, Sparkles, Check, Minus } from 'lucide-react';
+import { GalaxyAIIcon } from '../GalaxyAIIcon';
 
 export const ComparisonSection: React.FC = () => {
   return (
-    <section className="py-24 px-4 sm:px-8 max-w-7xl mx-auto select-none">
-      {/* Heading */}
+    <section id="compare" className="py-24 px-4 sm:px-8 max-w-7xl mx-auto select-none font-samsung">
+      {/* Samsung Section Heading */}
       <div className="text-center max-w-3xl mx-auto mb-16">
-        <span className="inline-block px-3 py-1 rounded-full bg-amber-500/10 border border-amber-400/30 text-amber-300 text-[10px] font-mono tracking-[0.25em] font-bold uppercase mb-3">
-          PARADIGM SHIFT
-        </span>
-        <h2 className="font-orbitron font-extrabold text-3xl sm:text-5xl tracking-tight text-white">
-          NOT JUST A CHATBOT.
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full galaxy-ai-badge mb-4">
+          <GalaxyAIIcon size={13} />
+          <span className="font-samsung font-bold text-xs tracking-wider text-blue-200 uppercase">
+            Product Comparison
+          </span>
+        </div>
+        <h2 className="font-samsung-display font-extrabold text-4xl sm:text-6xl tracking-tight text-white">
+          Why Galaxy KAIZEN?
         </h2>
-        <p className="text-slate-400 text-sm sm:text-base mt-3 font-sans">
-          Traditional LLM assistants wait for input and discard context. KAIZEN operates as an autonomous cognitive loop.
+        <p className="text-slate-400 text-sm sm:text-base mt-4 font-samsung max-w-xl mx-auto">
+          Compare the breakthrough capabilities of Samsung Galaxy KAIZEN against conventional conversational chatbots.
         </p>
       </div>
 
-      {/* Comparison Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
-        {/* Left: Traditional Assistant */}
-        <div className="ai-glass-panel rounded-3xl p-6 sm:p-8 border border-white/10 opacity-70 hover:opacity-90 transition-opacity flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between pb-4 border-b border-white/10 mb-6">
-              <div className="flex items-center gap-2 text-slate-400">
-                <XCircle className="w-5 h-5 text-rose-400" />
-                <h3 className="font-orbitron font-bold text-sm sm:text-base tracking-wider text-slate-300">
-                  TRADITIONAL ASSISTANT
-                </h3>
-              </div>
-              <span className="text-[10px] font-mono text-slate-500 uppercase">EPHEMERAL & PASSIVE</span>
-            </div>
-
-            {/* Static Linear Steps */}
-            <div className="flex flex-col items-center gap-4 py-8 font-mono text-xs sm:text-sm">
-              <div className="w-48 py-3 px-4 rounded-xl bg-white/5 border border-white/10 text-center text-slate-300 font-semibold shadow-sm">
-                Prompt
-              </div>
-              <ArrowDown className="w-4 h-4 text-slate-600" />
-
-              <div className="w-48 py-3 px-4 rounded-xl bg-white/5 border border-white/10 text-center text-slate-300 font-semibold shadow-sm">
-                Response
-              </div>
-              <ArrowDown className="w-4 h-4 text-slate-600" />
-
-              <div className="w-48 py-3 px-4 rounded-xl bg-rose-950/20 border border-rose-500/20 text-center text-rose-400/80 font-bold shadow-sm">
-                Done (Discarded)
-              </div>
-            </div>
+      {/* Samsung Spec Comparison Table / Grid */}
+      <div className="samsung-card samsung-squircle-lg p-6 sm:p-10 border border-white/[0.1] overflow-hidden">
+        {/* Table Header */}
+        <div className="grid grid-cols-12 pb-6 border-b border-white/[0.1] items-center text-xs font-samsung font-bold uppercase tracking-wider text-slate-400">
+          <div className="col-span-5 sm:col-span-6 text-white text-sm">
+            Core Capability
           </div>
-
-          <div className="pt-4 border-t border-white/10 text-center text-[11px] font-mono text-slate-500">
-            No continuous context • No memory vault • No autonomous side-effects
+          <div className="col-span-3 sm:col-span-3 text-center text-slate-400">
+            Standard AI Assistant
+          </div>
+          <div className="col-span-4 sm:col-span-3 text-center">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/15 border border-blue-400/30 text-white font-bold text-xs">
+              <GalaxyAIIcon size={12} />
+              <span>Galaxy KAIZEN</span>
+            </div>
           </div>
         </div>
 
-        {/* Right: KAIZEN Autonomous Cognitive Loop */}
-        <div className="ai-glass-card rounded-3xl p-6 sm:p-8 border border-amber-400/40 shadow-[0_0_35px_rgba(245,158,11,0.18)] flex flex-col justify-between relative overflow-hidden">
-          {/* Subtle electric amber background glow */}
-          <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/15 rounded-full blur-3xl pointer-events-none" />
-
-          <div>
-            <div className="flex items-center justify-between pb-4 border-b border-amber-500/20 mb-6">
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-5 h-5 text-amber-400" />
-                <h3 className="font-orbitron font-extrabold text-sm sm:text-base tracking-[0.15em] text-white">
-                  KAIZEN
-                </h3>
+        {/* Comparison Rows */}
+        <div className="divide-y divide-white/[0.06] text-xs sm:text-sm font-samsung">
+          {[
+            {
+              feature: 'Full-Duplex Voice & Interruption',
+              sub: 'Sub-800ms real-time audio with neural barge-in',
+              standard: 'Half-duplex push-to-talk (1500ms+ latency)',
+              kaizen: 'Ultra-low latency (< 800ms) with Silero VAD',
+              winner: true,
+            },
+            {
+              feature: 'Hardware Memory Isolation',
+              sub: 'Protected by Samsung Knox Vault',
+              standard: 'Transmitted to external cloud servers',
+              kaizen: 'Hardware-isolated local SQLite FTS5 enclave',
+              winner: true,
+            },
+            {
+              feature: 'Socratic Argumentation Engine',
+              sub: 'Dialectical discovery vs passive echo-chamber',
+              standard: 'Passive sycophancy (always agrees with user)',
+              kaizen: 'Analyzes argument graphs & challenges flaws',
+              winner: true,
+            },
+            {
+              feature: 'Voyager Lifelong Skill Compiler',
+              sub: 'Autonomous code compilation into permanent skills',
+              standard: 'Ephemeral answers forgotten after session',
+              kaizen: 'Compiles, tests in sandbox & saves to vault',
+              winner: true,
+            },
+            {
+              feature: '12 Domain Benchmark APIs',
+              sub: 'Travel, Finance, Housing, Commerce benchmark',
+              standard: 'Mock or simulated responses',
+              kaizen: 'Full FDB-v3 compliant tool calling engine',
+              winner: true,
+            },
+            {
+              feature: 'Multimodal Observer Context',
+              sub: 'Continuous workspace, terminal, and screen context',
+              standard: 'Isolated text box with no peripheral awareness',
+              kaizen: 'Continuous local Screenpipe ingestion',
+              winner: true,
+            },
+          ].map((row, idx) => (
+            <div key={idx} className="grid grid-cols-12 py-5 items-center gap-2 hover:bg-white/[0.02] transition-colors">
+              <div className="col-span-5 sm:col-span-6 pr-4">
+                <div className="font-bold text-white tracking-tight">{row.feature}</div>
+                <div className="text-[11px] text-slate-400 font-normal mt-0.5">{row.sub}</div>
               </div>
-              <span className="text-[10px] font-mono text-amber-300 uppercase font-bold tracking-wider">
-                CONTINUOUS AGENTIC LOOP
-              </span>
-            </div>
 
-            {/* Dynamic Circular Steps */}
-            <div className="flex flex-col items-center gap-2.5 py-4 font-mono text-xs sm:text-sm">
-              {[
-                { name: 'Observe', desc: 'Screenpipe context & speech ingestion', color: 'text-amber-300', border: 'border-amber-500/30' },
-                { name: 'Understand', desc: 'Deep semantic problem grounding', color: 'text-amber-200', border: 'border-amber-600/30' },
-                { name: 'Remember', desc: 'Encrypted SQLite FTS5 Vault recall', color: 'text-amber-400', border: 'border-amber-500/30' },
-                { name: 'Reason', desc: 'Dialectic multi-agent Socratic debate', color: 'text-amber-300', border: 'border-amber-600/30' },
-                { name: 'Act', desc: 'Autonomous terminal & sandbox router', color: 'text-amber-400', border: 'border-amber-500/30' },
-                { name: 'Learn', desc: 'Voyager lifelong skill accumulation', color: 'text-amber-300', border: 'border-amber-400/30' },
-              ].map((step, idx) => (
-                <React.Fragment key={idx}>
-                  <div className={`w-full max-w-sm py-2 px-4 rounded-xl bg-black/40 border ${step.border} flex items-center justify-between shadow-sm`}>
-                    <span className={`font-bold tracking-wider ${step.color}`}>{step.name}</span>
-                    <span className="text-[10px] text-slate-400 font-sans">{step.desc}</span>
-                  </div>
-                  {idx < 5 && <ArrowDown className="w-3.5 h-3.5 text-amber-400 animate-pulse" />}
-                </React.Fragment>
-              ))}
+              <div className="col-span-3 sm:col-span-3 text-center text-slate-400 text-xs flex flex-col items-center justify-center">
+                <Minus className="w-4 h-4 text-slate-500 mb-1" />
+                <span className="hidden sm:inline text-[11px]">{row.standard}</span>
+              </div>
 
-              {/* Loop Return Indicator */}
-              <div className="flex items-center gap-2 mt-2 text-amber-400 font-mono text-xs font-bold">
-                <RefreshCw className="w-4 h-4 animate-spin" />
-                <span>Continuous Lifelong Improvement (↺)</span>
+              <div className="col-span-4 sm:col-span-3 text-center flex flex-col items-center justify-center font-bold text-blue-300 text-xs">
+                <div className="w-5 h-5 rounded-full bg-blue-500/20 border border-blue-400/40 flex items-center justify-center text-blue-400 mb-1 shadow-sm">
+                  <Check className="w-3.5 h-3.5 stroke-[3]" />
+                </div>
+                <span className="text-[11px] text-slate-200">{row.kaizen}</span>
               </div>
             </div>
-          </div>
-
-          <div className="pt-4 border-t border-amber-500/20 text-center text-[11px] font-mono text-amber-300/80">
-            Local-first privacy • Zero external telemetry • Socratic co-pilot
-          </div>
+          ))}
         </div>
       </div>
     </section>
